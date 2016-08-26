@@ -5,8 +5,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import com.wikitude.architect.ArchitectView;
+import com.wikitude.architect.StartupConfiguration;
 
 public class Augment extends AppCompatActivity {
+    private ArchitectView					architectView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -14,7 +16,7 @@ public class Augment extends AppCompatActivity {
         setContentView(R.layout.activity_augment);
 
         this.architectView = (ArchitectView)this.findViewById( R.id.architectView );
-        final StartupConfiguration config = new StartupConfiguration('mylicense');
+        final StartupConfiguration config = new StartupConfiguration("mylicense");
         this.architectView.onCreate( config );
     }
 
