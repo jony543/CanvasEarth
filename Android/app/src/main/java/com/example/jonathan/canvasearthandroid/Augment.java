@@ -7,6 +7,8 @@ import android.os.Bundle;
 import com.wikitude.architect.ArchitectView;
 import com.wikitude.architect.StartupConfiguration;
 
+import java.io.IOException;
+
 public class Augment extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,7 +23,11 @@ public class Augment extends AppCompatActivity {
     @Override
     public void onPostCreate(Bundle savedInstanceState, PersistableBundle persistentState) {
         super.onPostCreate(savedInstanceState, persistentState);
-        this.architectView.load('192.168.1.6:8080'); //todo add path to HTML
+        try {
+            this.architectView.load("192.168.1.6:8080"); //todo add path to HTML
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
