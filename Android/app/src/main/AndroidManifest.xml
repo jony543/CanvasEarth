@@ -43,12 +43,17 @@
         android:theme="@style/AppTheme">
         <activity android:name=".Create">
         </activity>
-        <activity android:name=".Augment" />
-        <activity android:name=".Draw">
+        <activity android:name=".Augment">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity android:name=".Draw">
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
         </activity>
     </application>
 
