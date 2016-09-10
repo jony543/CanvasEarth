@@ -1,5 +1,8 @@
 package com.example.jonathan.canvasearthandroid;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.opengl.GLES20;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,6 +33,7 @@ public class Draw extends AppCompatActivity {
     private Layer viewLayer;
     private Layer strokesLayer;
     private Layer currentFrameLayer;
+    private Layer imageLayer;
 
     private PressurePathBuilder pathBuilder;
     private int pathStride;
@@ -39,7 +43,7 @@ public class Draw extends AppCompatActivity {
     private StrokeRenderer strokeRenderer;
     private MultiChannelSmoothener smoothener;
 
-    private boolean smooth = true;
+    private boolean smooth = false;
     private boolean drawPreliminary;
 
     @Override
@@ -53,7 +57,7 @@ public class Draw extends AppCompatActivity {
         pathBuilder.setPropertyConfig(PathBuilder.PropertyName.Width, 5f, 10f, 5f, 10f, PathBuilder.PropertyFunction.Power, 1.0f, false);
         pathStride = pathBuilder.getStride();
 
-        drawPreliminary = smooth;
+        drawPreliminary = smooth; // if using smoothing algorithm then also draw preliminary path to avoid lag. See Wacom documentation for details.
 
         SurfaceView surfaceView = (SurfaceView) findViewById(R.id.surfaceview);
         surfaceView.getHolder().addCallback(new SurfaceHolder.Callback(){
@@ -68,8 +72,19 @@ public class Draw extends AppCompatActivity {
                 viewLayer = inkCanvas.createViewLayer(width, height);
                 strokesLayer = inkCanvas.createLayer(width, height);
                 currentFrameLayer = inkCanvas.createLayer(width, height);
+                imageLayer = inkCanvas.createLayer(width, height);
 
-                inkCanvas.clearLayer(currentFrameLayer, Color.WHITE);
+                // load test bitmap to canvas
+                BitmapFactory.Options opts = new BitmapFactory.Options();
+                opts.inSampleSize = 1;
+                opts.inScaled = false;
+                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tree_of_life, opts);
+                inkCanvas.loadBitmap(imageLayer, bitmap, GLES20.GL_LINEAR, GLES20.GL_CLAMP_TO_EDGE);
+                inkCanvas.setTarget(viewLayer);
+                inkCanvas.drawLayer(imageLayer, BlendMode.BLENDMODE_OVERWRITE);
+                inkCanvas.invalidate();
+
+                inkCanvas.clearLayer(currentFrameLayer, Color.TRANSPARENT);
 
                 brush = new SolidColorBrush();
 
@@ -108,10 +123,8 @@ public class Draw extends AppCompatActivity {
 
     private void renderView() {
         inkCanvas.setTarget(viewLayer);
-//        inkCanvas.clearColor(Color.RED);
-
         // Copy the current frame layer in the view layer to present it on the screen.
-        inkCanvas.drawLayer(currentFrameLayer, BlendMode.BLENDMODE_OVERWRITE);
+        inkCanvas.drawLayer(currentFrameLayer, BlendMode.BLENDMODE_NORMAL);
         inkCanvas.invalidate();
     }
 
@@ -159,13 +172,13 @@ public class Draw extends AppCompatActivity {
         }
         if (event.getAction()!=MotionEvent.ACTION_UP){
             inkCanvas.setTarget(currentFrameLayer, strokeRenderer.getStrokeUpdatedArea());
-            inkCanvas.clearColor(Color.WHITE);
+            inkCanvas.clearColor(Color.TRANSPARENT);
             inkCanvas.drawLayer(strokesLayer, BlendMode.BLENDMODE_NORMAL);
             strokeRenderer.blendStrokeUpdatedArea(currentFrameLayer, BlendMode.BLENDMODE_NORMAL);
         } else {
             strokeRenderer.blendStroke(strokesLayer, BlendMode.BLENDMODE_NORMAL);
             inkCanvas.setTarget(currentFrameLayer);
-            inkCanvas.clearColor(Color.WHITE);
+            inkCanvas.clearColor(Color.TRANSPARENT);
             inkCanvas.drawLayer(strokesLayer, BlendMode.BLENDMODE_NORMAL);
         }
     }
