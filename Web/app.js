@@ -2,11 +2,10 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var url = require('url');
 var fs = require('fs');
+const morgan     = require('morgan');
 
 var app = express();
 
-app.use('/web', express.static('web'));
-app.use('/', express.static('web'));
 
 app.use(bodyParser.json({limit: '50mb'}));
 
@@ -15,6 +14,12 @@ app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
+
+app.use(morgan('tiny'));
+
+app.use('/web', express.static('web'));
+app.use('/', express.static('web'));
+
 
 //app.get('/sphere', function(req, res){
 //    var urlParts = url.parse(req.url);

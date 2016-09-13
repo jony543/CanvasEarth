@@ -46,10 +46,22 @@ public class Draw extends AppCompatActivity {
     private boolean smooth = false;
     private boolean drawPreliminary;
 
+    private Bitmap canvasBitmap;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_draw);
+
+        Bundle b = getIntent().getExtras();
+        canvasBitmap = b.getParcelable("Canvas");
+        if (canvasBitmap == null) {
+            // load test bitmap to canvas
+            BitmapFactory.Options opts = new BitmapFactory.Options();
+            opts.inSampleSize = 1;
+            opts.inScaled = false;
+            canvasBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tree_of_life, opts);
+        }
 
         pathBuilder = new PressurePathBuilder(); // new SpeedPathBuilder();
         pathBuilder.setNormalizationConfig(100.0f, 4000.0f);
@@ -74,16 +86,6 @@ public class Draw extends AppCompatActivity {
                 currentFrameLayer = inkCanvas.createLayer(width, height);
                 imageLayer = inkCanvas.createLayer(width, height);
 
-                // load test bitmap to canvas
-                BitmapFactory.Options opts = new BitmapFactory.Options();
-                opts.inSampleSize = 1;
-                opts.inScaled = false;
-                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.tree_of_life, opts);
-                inkCanvas.loadBitmap(imageLayer, bitmap, GLES20.GL_LINEAR, GLES20.GL_CLAMP_TO_EDGE);
-                inkCanvas.setTarget(viewLayer);
-                inkCanvas.drawLayer(imageLayer, BlendMode.BLENDMODE_OVERWRITE);
-                inkCanvas.invalidate();
-
                 inkCanvas.clearLayer(currentFrameLayer, Color.TRANSPARENT);
 
                 brush = new SolidColorBrush();
@@ -98,7 +100,16 @@ public class Draw extends AppCompatActivity {
 
                 strokeRenderer = new StrokeRenderer(inkCanvas, paint, pathStride, width, height);
 
+                setBitmapCanvas(canvasBitmap);
+
                 renderView();
+            }
+
+            private void setBitmapCanvas(Bitmap bitmap){
+                inkCanvas.loadBitmap(imageLayer, bitmap, GLES20.GL_LINEAR, GLES20.GL_CLAMP_TO_EDGE);
+                inkCanvas.setTarget(viewLayer);
+                inkCanvas.drawLayer(imageLayer, BlendMode.BLENDMODE_OVERWRITE);
+                inkCanvas.invalidate();
             }
 
             @Override
@@ -139,7 +150,7 @@ public class Draw extends AppCompatActivity {
         // Add the current input point to the path builder
         FloatBuffer part = pathBuilder.addPoint(phase, event.getX(), event.getY(), event.getEventTime());
         int partSize = pathBuilder.getPathPartSize();
-        Log.d("XXXX", "xx(1): path size=" + pathBuilder.getPathSize() + " | pos=" + pathBuilder.getPathLastUpdatePosition() + " | added_size=" + pathBuilder.getAddedPointsSize());
+        Log.d(this.getClass().getSimpleName(), "xx(1): path size=" + pathBuilder.getPathSize() + " | pos=" + pathBuilder.getPathLastUpdatePosition() + " | added_size=" + pathBuilder.getAddedPointsSize());
 
         if (partSize>0){
             if (smooth){
@@ -161,7 +172,7 @@ public class Draw extends AppCompatActivity {
             // Add the smoothed preliminary path to the path builder.
             pathBuilder.finishPreliminaryPath(preliminarySmoothingResult.getSmoothedPoints(), preliminarySmoothingResult.getSize());
 
-            Log.d("XXXX", "xx(2): path size=" + pathBuilder.getPathSize() + " | pos=" + pathBuilder.getPathLastUpdatePosition() + " | added_size=" + pathBuilder.getAddedPointsSize());
+            Log.d(this.getClass().getSimpleName(), "xx(2): path size=" + pathBuilder.getPathSize() + " | pos=" + pathBuilder.getPathLastUpdatePosition() + " | added_size=" + pathBuilder.getAddedPointsSize());
         }
     }
 

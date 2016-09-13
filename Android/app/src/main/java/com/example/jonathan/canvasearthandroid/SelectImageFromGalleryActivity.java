@@ -1,17 +1,28 @@
 package com.example.jonathan.canvasearthandroid;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
+import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class SelectImageFromGalleryActivity extends AppCompatActivity {
-    private final static int SELECT_PHOTO = 12345;
+    private final static int SELECT_PHOTO = 100;
 
     private ImageView imageView;
 
@@ -31,29 +42,38 @@ public class SelectImageFromGalleryActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        // Here we need to check if the activity that was triggers was the Image Gallery.
-        // If it is the requestCode will match the LOAD_IMAGE_RESULTS value.
-        // If the resultCode is RESULT_OK and there is some data we know that an image was picked.
         if (requestCode == SELECT_PHOTO && resultCode == RESULT_OK && data != null) {
-            // Let's read picked image data - its URI
             Uri pickedImage = data.getData();
-            // Let's read picked image path using content resolver
-            String[] filePath = { MediaStore.Images.Media.DATA };
-            Cursor cursor = getContentResolver().query(pickedImage, filePath, null, null, null);
-            cursor.moveToFirst();
-            String imagePath = cursor.getString(cursor.getColumnIndex(filePath[0]));
+            try {
+                Bitmap bitmap =
+                        MediaStore.Images.Media.getBitmap(this.getContentResolver(), pickedImage);
+                        //BitmapFactory.decodeStream(new FileInputStream(new File(pickedImage))); //, options);
+                imageView.setImageBitmap(bitmap);
+            } catch (FileNotFoundException ex) {
 
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-            Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
+            } catch (IOException ex) {
 
-            imageView.setImageBitmap(bitmap);
-
-            // Do something with the bitmap
-
-
-            // At the end remember to close the cursor or you will end with the RuntimeException!
-            cursor.close();
+            }
         }
+    }
+
+    private void ShowDialog(String msg){
+        Context context = this.getBaseContext();
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+
+        final TextView textView = new TextView(context);
+        textView.setText(msg);
+        alertDialogBuilder.setView(textView);
+
+        // set dialog message
+        alertDialogBuilder.setCancelable(false).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+            }
+        });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        // show it
+        alertDialog.show();
     }
 }
