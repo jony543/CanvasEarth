@@ -42,7 +42,7 @@ public class Augment extends AbstractArchitectActivity {
 
     @Override
     public String getARchitectWorldPath() {
-        return "http://172.16.68.205:8080/index.html";
+        return "http://172.16.68.205:8080/ar/index.html";
     }
 
     @Override
