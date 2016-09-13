@@ -32,7 +32,7 @@ public class Augment extends AbstractArchitectActivity {
 
     @Override
     protected boolean hasIR() {
-        return false;
+        return true;
     }
 
     @Override
