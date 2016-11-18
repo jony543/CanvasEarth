@@ -90,11 +90,19 @@ function init() {
 
     var augmentedObject = new THREE.Object3D();
 
+    var element = document.createElement( 'div' );
+    var image = document.createElement( 'img' );
+    image.src = 'resources/images/yinyang.png';
+
+    element.appendChild(image);
+    var css3dobject = new THREE.CSS3DObject( element );
+    augmentedObject.add(css3dobject);
+
     app.vuforia.isAvailable().then(function (available) {
         console.log("vuforia available?..." + available);
         if (!available) {
             var errorCallback = function(e) {
-                console.log('Reeeejected!', e);
+                console.re.log('video error', e.message);
             };
 
             navigator.getUserMedia({video: true}, function(localMediaStream) {
@@ -102,12 +110,18 @@ function init() {
                 video.src = window.URL.createObjectURL(localMediaStream);
             }, errorCallback);
 
+            augmentedObject.position.x = 100;
+            augmentedObject.position.y = 100;
+            augmentedObject.position.z = -1000;
+
             root.add(augmentedObject);
 
         } else {
+            augmentedObject.position.z = -0.5;
+
             // tell argon to initialize vuforia for our app, using our license information.
             app.vuforia.init({
-                encryptedLicenseData: "-----BEGIN PGP MESSAGE----- Version: OpenPGP.js v2.3.2 Comment: http://openpgpjs.org  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 =4wf3 -----END PGP MESSAGE-----"
+                encryptedLicenseData: "-----BEGIN PGP MESSAGE-----\nVersion: OpenPGP.js v2.3.2\nComment: http://openpgpjs.org\n\n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\nkY2a\n=r82W\n-----END PGP MESSAGE-----"
             }).then(function (api) {
                 // the vuforia API is ready, so we can start using it.
                 // tell argon to download a vuforia dataset.  The .xml and .dat file must be together
