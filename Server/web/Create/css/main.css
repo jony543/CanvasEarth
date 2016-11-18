@@ -1,0 +1,24 @@
+* {
+  box-sizing: border-box;
+}
+.navbar-btn {
+  width: 31%;
+  padding: 0px;
+  margin: 0px;
+}
+
+.navbarContainer {
+  padding: 0px;
+}
+
+#canvas {
+    height: calc(100vh - 25px);
+    width: 100vw;
+}
+
+/*html, body {margin: 0; height: 100%; overflow: hidden}*/
+
+body,
+html {
+  position: fixed;
+}
