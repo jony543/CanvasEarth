@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <QCARConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="qcar_config.xsd">
   <Tracking>
+    <ImageTarget name="piano" size="5.000000 3.750000" />
+    <ImageTarget name="bedroom" size="5.000000 3.750000" />
     <ImageTarget name="ny" size="10.000000 5.626667" />
   </Tracking>
 </QCARConfig>

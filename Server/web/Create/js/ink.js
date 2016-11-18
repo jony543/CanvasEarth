@@ -42,7 +42,9 @@ var WILL = {
         }
 
         this.strokeRenderer = new Module.StrokeRenderer(this.canvas, this.canvas);
+        // this.strokeRenderer.configure({brush: this.brush, color: this.color});
         this.strokeRenderer.configure({brush: this.brush, color: this.color});
+
     },
 
     initEvents: function() {
@@ -51,28 +53,37 @@ var WILL = {
         var self = this;
 
         $(Module.canvas).on("mousedown", function(e) {
-          e.preventDefault();
-          self.beginStroke(e);
+            console.re.log('mousdown');
+            e.preventDefault();
+            self.beginStroke(e);
         });
         $(Module.canvas).on("mousemove", function(e) {
-          e.preventDefault();
-          self.moveStroke(e);}
+            console.re.log('mousemove');
+            e.preventDefault();
+            self.moveStroke(e);}
         );
         $(document).on("mouseup", function(e) {
-          e.preventDefault();
-          self.endStroke(e);
+            console.re.log('mousemove');
+            e.preventDefault();
+            self.endStroke(e);
         });
 
         Module.canvas.addEventListener("touchstart", function(e) {
-          e.preventDefault();
+            console.re.log('touchstart');
+            console.re.log(e);
+            // e.preventDefault();
           self.beginStroke(e);
         });
         Module.canvas.addEventListener("touchmove", function(e) {
-          e.preventDefault();
+            console.re.log('touchmove');
+            // console.re.log(e);
+            // e.preventDefault();
           self.moveStroke(e);
         });
         document.addEventListener("touchend", function(e) {
-          e.preventDefault();
+            console.re.log('touchend');
+            console.re.log(e);
+          // e.preventDefault();
           self.endStroke(e);
         });
 
@@ -108,8 +119,12 @@ var WILL = {
     },
 
     getXYfromMouseEvent: function(evt){
+        // console.re.log(JSON.stringify(evt));
+        
         var x = evt.pageX - $('#canvas').offset().left;
         var y = evt.pageY - $('#canvas').offset().top;
+
+        // console.re.log('x: ' + x + ', y: ' + y);
 
         return {x: x, y: y};
     },
@@ -121,7 +136,7 @@ var WILL = {
         if (e.changedTouches) e = e.changedTouches[0];
         this.inputPhase = Module.InputPhase.Begin;
         this.pressure = this.getPressure(e);
-        this.pathBuilder = isNaN(this.pressure)?this.speedPathBuilder:this.pressurePathBuilder;
+        this.pathBuilder = this.speedPathBuilder; //isNaN(this.pressure)?this.speedPathBuilder:this.pressurePathBuilder;
 
         this.buildPath(this.getXYfromMouseEvent(e)); //{x: e.clientX, y: e.clientY});
         this.drawPath();
@@ -163,7 +178,7 @@ var WILL = {
     },
 
     buildPath: function(pos) {
-        var pathBuilderValue = isNaN(this.pressure)?Date.now() / 1000:this.pressure;
+        var pathBuilderValue = 50; // isNaN(this.pressure)?Date.now() / 1000:this.pressure;
 
         var pathPart = this.pathBuilder.addPoint(this.inputPhase, pos, pathBuilderValue);
         var pathContext = this.pathBuilder.addPathPart(pathPart);

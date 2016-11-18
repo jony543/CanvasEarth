@@ -3,13 +3,7 @@
 /// <reference types="dat-gui" />
 /// <reference types="stats" />
 // set up Argon
-
-
-console.re.log('remote log test');
-
-
 var app = Argon.init();
-console.re.log("init fuck off");
 // set up THREE.  Create a scene, a perspective camera and an object
 // for the user's location
 var scene = new THREE.Scene();
@@ -27,8 +21,8 @@ renderer.setPixelRatio(window.devicePixelRatio);
 app.view.element.appendChild(renderer.domElement);
 // to easily control stuff on the display
 var hud = new THREE.CSS3DArgonHUD();
-// We put some elements in the index.html, for convenience. 
-// Here, we retrieve the description box and move it to the 
+// We put some elements in the index.html, for convenience.
+// Here, we retrieve the description box and move it to the
 // the CSS3DArgonHUD hudElements[0].  We only put it in the left
 // hud since we'll be hiding it in stereo
 var description = document.getElementById('description');
@@ -39,19 +33,19 @@ var stats = new Stats();
 hud.hudElements[0].appendChild(stats.dom);
 // Tell argon what local coordinate system you want.  The default coordinate
 // frame used by Argon is Cesium's FIXED frame, which is centered at the center
-// of the earth and oriented with the earth's axes.  
+// of the earth and oriented with the earth's axes.
 // The FIXED frame is inconvenient for a number of reasons: the numbers used are
 // large and cause issues with rendering, and the orientation of the user's "local
 // view of the world" is different that the FIXED orientation (my perception of "up"
-// does not correspond to one of the FIXED axes).  
-// Therefore, Argon uses a local coordinate frame that sits on a plane tangent to 
+// does not correspond to one of the FIXED axes).
+// Therefore, Argon uses a local coordinate frame that sits on a plane tangent to
 // the earth near the user's current location.  This frame automatically changes if the
 // user moves more than a few kilometers.
 // The EUS frame cooresponds to the typical 3D computer graphics coordinate frame, so we use
 // that here.  The other option Argon supports is localOriginEastNorthUp, which is
 // more similar to what is used in the geospatial industry
 app.context.setDefaultReferenceFrame(app.context.localOriginEastUpSouth);
-// create a bit of animated 3D text that says "argon.js" to display 
+// create a bit of animated 3D text that says "argon.js" to display
 var uniforms = {
     amplitude: { type: "f", value: 0.0 }
 };
@@ -116,30 +110,26 @@ loader.load('../resources/fonts/helvetiker_bold.typeface.js', function (font) {
 });
 app.vuforia.isAvailable().then(function (available) {
     // vuforia not available on this platform
-    console.re.log("vuforia initialization...." + available);
     if (!available) {
-        console.warn("vuforia not available on this platform.");
+        console.re.warn("vuforia not available on this platform.");
         return;
     }
     // tell argon to initialize vuforia for our app, using our license information.
     app.vuforia.init({
-        encryptedLicenseData: "-----BEGIN PGP MESSAGE-----\nVersion: OpenPGP.js v2.3.2\nComment: http://openpgpjs.org\n\n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\nrwf+y/7Fmffo2u8MNIp9YGXM\n=IH7H\n-----END PGP MESSAGE-----"
+        encryptedLicenseData: "-----BEGIN PGP MESSAGE-----\nVersion: OpenPGP.js v2.3.2\nComment: http://openpgpjs.org\n\n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\n+oml9MCiqFKGIzlqlEP+hUFB\n=zJIx\n-----END PGP MESSAGE-----"
     }).then(function (api) {
-        console.re.log('vuforia init finished');
         // the vuforia API is ready, so we can start using it.
         // tell argon to download a vuforia dataset.  The .xml and .dat file must be together
-        // in the web directory, even though we just provide the .xml file url here 
-        api.objectTracker.createDataSet("../resources/datasets/GVUBrochure.xml").then(function (dataSet) {
+        // in the web directory, even though we just provide the .xml file url here
+        api.objectTracker.createDataSet("../resources/datasets/ArgonTutorial.xml").then(function (dataSet) {
             // the data set has been succesfully downloaded
             // tell vuforia to load the dataset.
-            console.re.log('dataset created');
             dataSet.load().then(function () {
-                console.re.log("dataset loaded");
                 // when it is loaded, we retrieve a list of trackables defined in the
                 // dataset and set up the content for the target
                 var trackables = dataSet.getTrackables();
                 // tell argon we want to track a specific trackable.  Each trackable
-                // has a Cesium entity associated with it, and is expressed in a 
+                // has a Cesium entity associated with it, and is expressed in a
                 // coordinate frame relative to the camera.  Because they are Cesium
                 // entities, we can ask for their pose in any coordinate frame we know
                 // about.
@@ -159,10 +149,10 @@ app.vuforia.isAvailable().then(function (available) {
                         gvuBrochureObject.position.copy(gvuBrochurePose.position);
                         gvuBrochureObject.quaternion.copy(gvuBrochurePose.orientation);
                     }
-                    // when the target is first seen after not being seen, the 
+                    // when the target is first seen after not being seen, the
                     // status is FOUND.  Here, we move the 3D text object from the
                     // world to the target.
-                    // when the target is first lost after being seen, the status 
+                    // when the target is first lost after being seen, the status
                     // is LOST.  Here, we move the 3D text object back to the world
                     if (gvuBrochurePose.poseStatus & Argon.PoseStatus.FOUND) {
                         gvuBrochureObject.add(argonTextObject);
@@ -174,7 +164,7 @@ app.vuforia.isAvailable().then(function (available) {
                     }
                 });
             }).catch(function (err) {
-                console.log("could not load dataset: " + err.message);
+                console.re.log("could not load dataset: " + err.message);
             });
             // activate the dataset.
             api.objectTracker.activateDataSet(dataSet);
@@ -190,7 +180,7 @@ app.context.updateEvent.addEventListener(function () {
     // get the position and orientation (the "pose") of the user
     // in the local coordinate frame.
     var userPose = app.context.getEntityPose(app.context.user);
-    // assuming we know the user's pose, set the position of our 
+    // assuming we know the user's pose, set the position of our
     // THREE user object to match it
     if (userPose.poseStatus & Argon.PoseStatus.KNOWN) {
         userLocation.position.copy(userPose.position);
@@ -208,15 +198,15 @@ app.renderEvent.addEventListener(function () {
     var viewport = app.view.getViewport();
     renderer.setSize(viewport.width, viewport.height);
     hud.setSize(viewport.width, viewport.height);
-    // there is 1 subview in monocular mode, 2 in stereo mode    
+    // there is 1 subview in monocular mode, 2 in stereo mode
     for (var _i = 0, _a = app.view.getSubviews(); _i < _a.length; _i++) {
         var subview = _a[_i];
-        // set the position and orientation of the camera for 
+        // set the position and orientation of the camera for
         // this subview
         camera.position.copy(subview.pose.position);
         camera.quaternion.copy(subview.pose.orientation);
         // the underlying system provide a full projection matrix
-        // for the camera. 
+        // for the camera.
         camera.projectionMatrix.fromArray(subview.projectionMatrix);
         // set the viewport for this view
         var _b = subview.viewport, x = _b.x, y = _b.y, width = _b.width, height = _b.height;

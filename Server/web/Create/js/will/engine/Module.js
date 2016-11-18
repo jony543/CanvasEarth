@@ -25,7 +25,6 @@ var Module = {
 		else
 			console.log(text);
 	},
-	worker: (typeof window == "undefined"),
 	canvas: null,
 	canvasID: "canvas",
 	// setStatus: function(text) {},
@@ -47,6 +46,8 @@ Module.getScriptPrefixURL = function(name) {
 
 			if (src.contains("/"))
 				src = src.substring(0, src.lastIndexOf("/"));
+			else
+				src = "";
 
 			result = src;
 			break;
@@ -56,8 +57,17 @@ Module.getScriptPrefixURL = function(name) {
 	return result;
 }
 
-if (!Module.worker)
+if (ENVIRONMENT == EnvironmentType.WEB) {
+	/**
+	 * Prefix path to the engine mem file.
+	 * Auto initialized with prefix path of Module.js.
+	 * Should be configured manually when used in workers or for custom mem file location.
+	 *
+	 * @memberof Module
+	 * @member {String} memoryInitializerPrefixURL
+	 */
 	Module.memoryInitializerPrefixURL = Module.getScriptPrefixURL("Module.js") + "/";
+}
 
 Module.addPostScript(function() {
 	Object.defineProperty(Module.VectorInterval.prototype, "length", {get: function() {return this.size();}});
@@ -137,10 +147,18 @@ Module.addPostScript(function() {
 
 	Object.extend(Module.ParticleBrush.prototype, {
 		configureShape: function(src, callback, context) {
+			if (!this.shapeTexture) {
+				this.shapeTexture = Module.GLTools.createTexture(GLctx.CLAMP_TO_EDGE, GLctx.LINEAR);
+			}
+
 			Module.GLTools.prepareTexture(this.shapeTexture, src, callback, context);
 		},
 
 		configureFill: function(src, callback, context) {
+			if (!this.fillTexture) {
+				this.fillTexture = Module.GLTools.createTexture(GLctx.REPEAT, GLctx.NEAREST);
+			}
+
 			Module.GLTools.prepareTexture(this.fillTexture, src, function(texture) {
 				this.setFillTextureSize(texture.image.width, texture.image.height);
 				if (callback) callback.call(context || {});
@@ -464,12 +482,13 @@ Module.addPostScript(function() {
 
 				affectedArea = Module.RectTools.union(affectedArea, split.bounds);
 
-				split.strokes.forEach(function(stroke) {
-					var interval = {fromIndex: stroke.fromIndex, toIndex: stroke.toIndex, fromTValue: stroke.ts, toTValue: stroke.tf, inside: false};
+				for (var i = 0; i < split.strokes.length; i++) {
+					var strokeID = split.strokes[i].id;
+					var interval = split.intervals[i];
 
 					intervals.push(interval);
-					if (stroke.id) intervalIDs.push(stroke.id);
-				}, this);
+					if (strokeID) intervalIDs.push(strokeID);
+				}
 
 				Module.writeBytes(intervalIDs.toUint32Array(), function(intervalIDs) {
 					splitEncoder.encodeStroke(split.id, affectedArea, intervals, intervalIDs);
@@ -591,8 +610,8 @@ Module.addPostScript(function() {
 		},
 
 		makeTransformAroundPoint: function(alpha, scale, point) {
-			var sx = Math.cos(alpha) * scale;
-			var sy = Math.cos(alpha) * scale;
+			var sx = Math.cos(alpha) * (isNaN(scale)?scale.x:scale);
+			var sy = Math.cos(alpha) * (isNaN(scale)?scale.y:scale);
 			var sin = Math.sin(alpha);
 
 			return this.create({
@@ -618,6 +637,14 @@ Module.addPostScript(function() {
 			}
 
 			return result;
+		},
+
+		toCSS: function(mat) {
+			return "matrix(" + this.toArray(mat).join(", ") + ")";
+		},
+
+		toArray: function(mat) {
+			return [mat.a, mat.b, mat.c, mat.d, mat.tx, mat.ty];
 		},
 
 		transformRect: function(rect, mat, discardCeil) {
@@ -745,7 +772,11 @@ Module.GenericLayer = function() {
  * @memberof Module.GenericLayer.prototype
  * @member {int} width
  */
-Object.defineProperty(Module.GenericLayer.prototype, "width", {get: function() {return this.nativeLayer.width;}});
+Object.defineProperty(Module.GenericLayer.prototype, "width", {
+	get: function() {
+		return this.layer.width;
+	}
+});
 
 /**
  * Layer height
@@ -753,7 +784,11 @@ Object.defineProperty(Module.GenericLayer.prototype, "width", {get: function() {
  * @memberof Module.GenericLayer.prototype
  * @member {int} height
  */
-Object.defineProperty(Module.GenericLayer.prototype, "height", {get: function() {return this.nativeLayer.height;}});
+Object.defineProperty(Module.GenericLayer.prototype, "height", {
+	get: function() {
+		return this.layer.height;
+	}
+});
 
 /**
  * The bounds of the layer. Equals to (0, 0, width, height).
@@ -761,7 +796,11 @@ Object.defineProperty(Module.GenericLayer.prototype, "height", {get: function() 
  * @memberof Module.GenericLayer.prototype
  * @member {Module.Rectangle} bounds
  */
-Object.defineProperty(Module.GenericLayer.prototype, "bounds", {get: function() {return this.nativeLayer.bounds;}});
+Object.defineProperty(Module.GenericLayer.prototype, "bounds", {
+	get: function() {
+		return Module.RectTools.create(this.layer.bounds.left, this.layer.bounds.bottom, this.layer.bounds.width, this.layer.bounds.height);
+	}
+});
 
 Object.extend(Module.GenericLayer.prototype, {
 	/**
@@ -783,10 +822,14 @@ Object.extend(Module.GenericLayer.prototype, {
 		else if (Module.Color.is(rect))
 			throw new Error("`clear` first argument should be Module.Rectangle");
 
-		if (rect)
-			this.nativeLayer.clearArea(rect, color);
-		else
-			this.nativeLayer.clear(color);
+		var wrect = rect ? makeRectFromFlippedRect(rect) : null;
+
+		this.renderingContext.setTarget(this.layer, wrect);
+		this.renderingContext.clearColor(color);
+
+		if (wrect) {
+			this.renderingContext.disableTargetClipRect();
+		}
 	},
 
 	/**
@@ -835,16 +878,24 @@ Object.extend(Module.GenericLayer.prototype, {
 		var dirtyArea;
 
 		Module.writeBytes(path.points, function(points) {
-			if (path.transform && !Module.MatTools.isIdentity(path.transform))
+			if (path.transform && !Module.MatTools.isIdentity(path.transform)) {
 				Module.MatTools.transformPath(Module.PathBuilder.createPath(points, path.stride), path.transform);
+				if (!isNaN(width)) width *= Math.sqrt(path.transform.a*path.transform.a + path.transform.c*path.transform.c);
+			}
 
-			dirtyArea = this.nativeLayer.drawStroke(brush, points, path.stride, width, color, roundCapBeggining, roundCapEnding, ts, tf, drawContext);
+			points = Module.readFloats(points);
+
+			this.renderingContext.setTarget(this.layer);
+			dirtyArea = this.renderingContext.drawStroke(brush, points, path.stride, width, color, roundCapBeggining, roundCapEnding, ts, tf, drawContext, true);
+
+			if (dirtyArea)
+				dirtyArea = Module.RectTools.create(dirtyArea.left, dirtyArea.bottom, dirtyArea.width, dirtyArea.height);
 		}, this);
 
 		if (path.transform && !Module.MatTools.isIdentity(path.transform) && Module.isInt64Ptr(path.points))
 			Module.MatTools.transformPath(path, Module.MatTools.invert(path.transform));
 
-		return isNaN(dirtyArea.left)?null:dirtyArea;
+		return dirtyArea;
 	},
 
 	/**
@@ -859,7 +910,8 @@ Object.extend(Module.GenericLayer.prototype, {
 		if (!Module.Stroke.validatePath(path)) return;
 
 		Module.writeBytes(path.points, function(points) {
-			this.nativeLayer.fillPath(points, path.stride, color, !!antiAliasing);
+			this.renderingContext.setTarget(this.layer);
+			this.renderingContext.fillPath(points, path.stride, color, !!antiAliasing);
 		}, this);
 	},
 
@@ -883,12 +935,18 @@ Object.extend(Module.GenericLayer.prototype, {
 		if (options.sourceRect && !options.destinationRect) throw new Error("With `sourceRect`, `destinationRect` is required");
 		if (options.destinationRect && !options.sourceRect) throw new Error("With `destinationRect`, `sourceRect`is required");
 
-		if (options.transform)
-			this.nativeLayer.blendWithTransform(source.nativeLayer, options.transform, options.mode);
-		else if (options.sourceRect && options.destinationRect)
-			this.nativeLayer.blendWithRects(source.nativeLayer, options.sourceRect, options.destinationRect, options.mode);
-		else
-			this.nativeLayer.blendWithMode(source.nativeLayer, options.mode);
+		if (options.transform) {
+			this.renderingContext.setTarget(this.layer);
+			this.renderingContext.drawLayerWithTransform(source.layer, makeMat4FromMatrix2D(options.transform), options.mode);
+		}
+		else if (options.sourceRect && options.destinationRect) {
+			this.renderingContext.setTarget(this.layer);
+			this.renderingContext.drawLayer(source.layer, makeQuadFromFlippedRect(options.sourceRect), makeQuadFromFlippedRect(options.destinationRect), options.mode);
+		}
+		else {
+			this.renderingContext.setTarget(this.layer);
+			this.renderingContext.drawLayerWithTransform(source.layer, null, options.mode);
+		}
 	},
 
 	/**
@@ -898,21 +956,8 @@ Object.extend(Module.GenericLayer.prototype, {
 	 * @param {Module.Rectangle} [rect=bounds] area to read
 	 */
 	readPixels: function(rect) {
-		if (!rect) rect = this.bounds;
-
-		var int64Ptr = new Object();
-		int64Ptr.length = rect.width * rect.height * 4;
-		int64Ptr.byteLength = int64Ptr.length;
-
-		var ptr = Module._malloc(int64Ptr.length);
-		int64Ptr.ptr = ptr;
-
-		this.nativeLayer.readPixels(int64Ptr, rect);
-
-		var bytes = Module.readBytes(int64Ptr);
-		Module._free(ptr);
-
-		return bytes;
+		this.renderingContext.setTarget(this.layer);
+		return this.renderingContext.readPixels(rect ? makeRectFromFlippedRect(rect) : null);
 	},
 
 	/**
@@ -925,11 +970,9 @@ Object.extend(Module.GenericLayer.prototype, {
 	writePixels: function(bytes, rect) {
 		if (!bytes) throw new Error("GenericLayer$writePixels 'bytes' parameter is required");
 		if (!(bytes instanceof Uint8Array)) throw new Error("GenericLayer$writePixels 'bytes' parameter is not instance of Uint8Array");
-		if (!rect) rect = this.bounds;
 
-		Module.writeBytes(bytes, function(int64Ptr) {
-			this.nativeLayer.writePixels(int64Ptr, rect);
-		}, this);
+		this.renderingContext.setTarget(this.layer);
+		this.renderingContext.writePixels(rect ? makeRectFromFlippedRect(rect) : null, bytes);
 	}
 });
 
@@ -949,9 +992,6 @@ Module.InkCanvas = function(canvas, width, height, webGLContextAttributes) {
 	if (!(canvas instanceof HTMLCanvasElement)) throw new Error("canvas is required");
 	if (!(width > 0 && height > 0)) throw new Error("width and height are required and should be positive whole numbers");
 
-	var contextHandle = GL.createContext(canvas, webGLContextAttributes || {});
-	canvas.contextHandle = contextHandle;
-
 	/**
 	 * Drawing surface
 	 *
@@ -961,15 +1001,25 @@ Module.InkCanvas = function(canvas, width, height, webGLContextAttributes) {
 	 */
 	Object.defineProperty(this, "surface", {value: canvas});
 
+	canvas.width = width;
+	canvas.height = height;
+
+	var renderingContext = new RenderingContext(canvas, webGLContextAttributes || {});
+
+	Object.defineProperty(this, "renderingContext", { value: renderingContext });
+
 	this.activate();
-	GLctx.getExtension("EXT_blend_minmax");
 
-	var inkCanvas = new Module.NativeInkCanvas(width, height);
+	this.screenHeight = this.screenWidth = Math.max(screen.width, screen.height);
 
-	Object.defineProperty(this, "nativeLayer", {
+	var layer = this.renderingContext.createLayer(width, height, 1);
+	layer.init3(null, null, null, false);
+	layer.flipY = true;
+
+	Object.defineProperty(this, "layer", {
 		get: function() {
 			this.activate();
-			return inkCanvas;
+			return layer;
 		}
 	});
 
@@ -980,7 +1030,11 @@ Module.InkCanvas = function(canvas, width, height, webGLContextAttributes) {
 	 * @memberof Module.InkCanvas.prototype
 	 * @member {WebGLRenderingContext} ctx
 	 */
-	Object.defineProperty(this, "ctx", {value: GL.contexts[contextHandle].GLctx});
+	Object.defineProperty(this, "ctx", {
+		get: function() {
+			return this.willGLContext.gl;
+		}
+	});
 
 	if (webGLContextAttributes && webGLContextAttributes.preserveDrawingBuffer) {
 		Object.defineProperty(this, "frameID", {value: NaN});
@@ -989,6 +1043,15 @@ Module.InkCanvas = function(canvas, width, height, webGLContextAttributes) {
 			throw new Error("This usage is not applicable when preserve drawing buffer");
 			// callback(Date.now());
 		};
+	}
+	else if (Module.ownBackbuffer) {
+		var self = this;
+
+		this.requestAnimationFrame = function(callback) {
+			self.frameID = requestAnimationFrame(callback);
+		};
+
+		this.frameID = -1;
 	}
 	else {
 		var blend = this.super.bind("blend");
@@ -1037,7 +1100,7 @@ Module.InkCanvas.implementBackbuffer = function(self, blend) {
 
 		if (self.present) {
 			delete self.present;
-			blend(self.backbuffer, {Mode: Module.BlendMode.NONE});
+			blend(self.backbuffer, {mode: Module.BlendMode.NONE});
 		}
 
 		self.frameID = requestAnimationFrame(present);
@@ -1101,55 +1164,86 @@ Object.extend(Module.InkCanvas.prototype, {
 			if (!options.framebuffer) throw new Error("`framebuffer` is required when `renderbuffer` available");
 			if (!(options.framebuffer instanceof WebGLFramebuffer)) throw new Error("`framebuffer` is not instance of WebGLFramebuffer");
 			if (!(options.renderbuffer instanceof WebGLRenderbuffer)) throw new Error("`renderbuffer` is not instance of WebGLRenderbuffer");
-			if (!options.framebuffer.name) Module.GLTools.indexGLResource(options.framebuffer);
-			if (!options.renderbuffer.name) Module.GLTools.indexGLResource(options.renderbuffer);
 
-			layer = this.nativeLayer.createLayerFromGLBuffers(options.framebuffer.name, options.renderbuffer.name, !!options.ownGlResources);
+			layer = this.renderingContext.createLayerFromGLBuffers(options.framebuffer, options.renderbuffer, !!options.ownGlResources);
 		}
 		else if (options.framebuffer) {
 			if (!(options.framebuffer instanceof WebGLFramebuffer)) throw new Error("`framebuffer` is not instance of WebGLFramebuffer");
-			if (!options.framebuffer.name) Module.GLTools.indexGLResource(options.framebuffer);
 
-			layer = this.nativeLayer.createLayerFromGLFramebuffer(options.framebuffer.name, !!options.ownGlResources);
+			layer = this.renderingContext.createLayerFromGLFramebuffer(options.framebuffer, !!options.ownGlResources);
 		}
 		else if (options.texture) {
 			if (!(options.texture instanceof WebGLTexture)) throw new Error("`texture` is not instance of WebGLTexture");
-			if (!options.texture.name) Module.GLTools.indexGLResource(options.texture);
 
-			if (options.width > 0 && options.height > 0)
-				layer = this.nativeLayer.createLayer(options.texture.name, options.width, options.height, !!options.ownGlResources);
-			else if (options.texture.image)
-				layer = this.nativeLayer.createLayerFromGLTexture(options.texture.name, options.texture.image.width, options.texture.image.height, !!options.ownGlResources);
+			if (options.width > 0 && options.height > 0) {
+				layer = this.renderingContext.createLayer(options.width, options.height, 1);
+				layer.init3(null, null, options.texture, !!options.ownGlResources);
+			}
+			else if (options.texture.image) {
+				layer = this.renderingContext.createLayer(options.texture.image.width, options.texture.image.height, 1);
+				layer.init3(null, null, options.texture, !!options.ownGlResources);
+			}
 			else
 				throw new Error("`width` and `height` are required when `texture` is available");
 		}
 		else if (options.width > 0 && options.height > 0) {
-			if (options.scaleFactor > 0)
-				layer = this.nativeLayer.createLayerWithScale(options.width, options.height, options.scaleFactor);
-			else
-				layer = this.nativeLayer.createLayerWithDimensions(options.width, options.height);
+			if (options.scaleFactor > 0) {
+				layer = this.renderingContext.createLayer(options.width, options.height, options.scaleFactor);
+				layer.init1(true);
+			}
+			else {
+				layer = this.renderingContext.createLayer(options.width, options.height, 1);
+				layer.init1(true);
+			}
 		}
-		else
-			layer = this.nativeLayer.createLayer();
+		else {
+			layer = this.renderingContext.createLayer(this.screenWidth, this.screenHeight, 1);
+			layer.init1(true);
+		}
 
-		var OffscreenLayer = Function.create("OffscreenLayer", function(nativeLayer) {
-			this.nativeLayer = nativeLayer;
+		var OffscreenLayer = Function.create("OffscreenLayer", function(layer, renderingContext) {
+			this.layer = layer;
+			this.renderingContext = renderingContext;
 
 			// init_ClassHandle in WacomInkEngine.js
 			// this.isAliasOf = function(other) {return this.nativeLayer.isAliasOf(other.nativeLayer);};
 			// this.clone = function() {return this.nativeLayer.clone();};
-			this.delete = function() {nativeLayer.delete();};
-			this.isDeleted = function() {return nativeLayer.isDeleted();};
-			this.deleteLater = function() {nativeLayer.deleteLater(); return this;};
+
+			this.delete = function() {
+				layer.delete();
+			};
+
+			this.isDeleted = function() {
+				return layer.isDeleted();
+			};
+
+			this.deleteLater = function() {
+				layer.deleteLater();
+				return this;
+			};
 		});
 
 		OffscreenLayer.extends(Module.GenericLayer);
 
-		Object.defineProperty(OffscreenLayer.prototype, "renderbuffer", {get: function() {return this.nativeLayer.renderbuffer;}});
-		Object.defineProperty(OffscreenLayer.prototype, "framebuffer", {get: function() {return this.nativeLayer.framebuffer;}});
-		Object.defineProperty(OffscreenLayer.prototype, "texture", {get: function() {return this.nativeLayer.texture;}});
+		Object.defineProperty(OffscreenLayer.prototype, "renderbuffer", {
+			get: function() {
+				return this.layer.renderbuffer;
+			}
+		});
 
-		return new OffscreenLayer(layer);
+		Object.defineProperty(OffscreenLayer.prototype, "framebuffer", {
+			get: function() {
+				return this.layer.framebuffer;
+			}
+		});
+
+		Object.defineProperty(OffscreenLayer.prototype, "texture", {
+			get: function() {
+				return this.layer.colorTexture;
+			}
+		});
+
+		return new OffscreenLayer(layer, this.renderingContext);
 	},
 
 	/**
@@ -1160,30 +1254,32 @@ Object.extend(Module.InkCanvas.prototype, {
 	 * @param {int} height
 	 */
 	resize: function(width, height) {
-		this.nativeLayer.resize(width, height);
+		this.surface.width = width;
+		this.surface.height = height;
+		this.layer.resize(width, height);
 	},
 
 	activate: function() {
 		Module.canvas = this.surface;
-		GL.makeContextCurrent(this.surface.contextHandle);
+		window.GLctx = this.renderingContext.willGLContext.gl;
 	},
 
 	delete: function() {
 		cancelAnimationFrame(this.frameID);
 
-		this.nativeLayer.delete();
+		this.layer.delete();
 		this.backbuffer.delete();
 	},
 
 	deleteLater: function() {
-		this.nativeLayer.deleteLater();
+		this.layer.deleteLater();
 		this.backbuffer.deleteLater();
 
 		return this;
 	},
 
 	isDeleted: function() {
-		return this.nativeLayer.isDeleted();
+		return this.layer.isDeleted();
 	}
 }, true);
 
@@ -1447,6 +1543,7 @@ Object.extend(Module.Stroke.prototype, {
 		var intersect = false;
 
 		var strokes = new Array();
+		var strokesIntervals = new Array();
 		var holes = new Array();
 		var selected = new Array();
 
@@ -1462,21 +1559,27 @@ Object.extend(Module.Stroke.prototype, {
 			if (type == Module.IntersectorTargetType.STROKE) {
 				if (interval.inside)
 					holes.push(interval);
-				else
+				else {
+					strokesIntervals.push(interval);
 					strokes.push(subStroke);
+				}
 			}
 			else {
 				if (interval.inside)
 					selected.push(subStroke);
 
+				strokesIntervals.push(interval);
 				strokes.push(subStroke);
 			}
 		}
 
-		result = {intersect: intersect, bounds: dirtyArea};
+		result = {intersect: intersect};
 
 		if (intersect) {
+			result.stroke = this;
+			result.bounds = dirtyArea;
 			result.strokes = strokes;
+			result.intervals = strokesIntervals;
 
 			if (type == Module.IntersectorTargetType.STROKE)
 				result.holes = holes;
@@ -1498,14 +1601,11 @@ Object.extend(Module.Stroke.prototype, {
 	 * @return {Module.Stroke} new stroke
 	 */
 	subStroke: function(fromIndex, toIndex, fromTValue, toTValue) {
-		if (fromTValue == 0 && toTValue == 1)
+		if (fromIndex == 0 && toIndex == this.length - 1 && fromTValue == this.ts && toTValue == this.tf)
 			return this;
 
 		var path = this.path.getPart(fromIndex, toIndex);
 		var stroke = new Module.Stroke(this.brush, path, this.width, this.color, fromTValue, toTValue, this.randomSeed, this.blendMode);
-
-		stroke.fromIndex = fromIndex;
-		stroke.toIndex = toIndex;
 
 		return stroke;
 	},
@@ -1796,7 +1896,7 @@ Object.extend(Module.StrokeRenderer.prototype, {
 			return false;
 
 		if (isNaN(this.width) && path.stride == 2) {
-			Module.printErr("WARNING: Either the width property must be set or the path points must include a witdh value!");
+			Module.printErr("WARNING: Either the width property must be set or the path points must include a width value!");
 			return false;
 		}
 
@@ -1949,16 +2049,18 @@ Object.extend(Module.GenericPath.prototype, {
 	 *
 	 * @method Module.GenericPath.prototype.draw
 	 * @param {CanvasRenderingContext2D} ctx
+	 * @param {Module.Matrix2D} transform context transform. When not available,
+	 * 		transform is `transform` of Path if available or `transform` of ctx.canvas if available or multiply of both if available.
 	 */
-	draw: function(ctx) {
-		var transform;
-
-		if (this.transform) {
-			transform = this.transform;
-			if (ctx.canvas.transform) transform = Module.MatTools.multiply(ctx.canvas.transform, transform);
+	draw: function(ctx, transform) {
+		if (!transform) {
+			if (this.transform) {
+				transform = this.transform;
+				if (ctx.canvas.transform) transform = Module.MatTools.multiply(ctx.canvas.transform, transform);
+			}
+			else if (ctx.canvas.transform)
+				transform = ctx.canvas.transform;
 		}
-		else if (ctx.canvas.transform)
-			transform = ctx.canvas.transform;
 
 		ctx.fillStyle = "rgba(" + Module.Color.toArray(this.color).join(", ") + ")";
 		if (transform) ctx.setTransform(transform.a, transform.b, transform.c, transform.d, transform.tx, transform.ty);
@@ -2267,17 +2369,25 @@ Module.RectTools = {
 	 * Ceils all properties of the rect object
 	 *
 	 * @param {Module.Rectangle} rect src rect
+	 * @param {boolean} even width & height to be even
 	 * @return {Module.Rectangle} ceiled rect
 	 */
-	ceil: function(rect) {
+	ceil: function(rect, even) {
 		if (!rect) return null;
 
 		var left = Math.floor(rect.left);
 		var top = Math.floor(rect.top);
 		var right = Math.ceil(rect.right);
 		var bottom = Math.ceil(rect.bottom);
+		var width = right-left;
+		var height = bottom-top;
 
-		return this.create(left, top, right-left, bottom-top);
+		if (even) {
+			width += width % 2;
+			height += height % 2;
+		}
+
+		return this.create(left, top, width, height);
 	},
 
 	/**
@@ -2340,38 +2450,6 @@ Module.RectTools = {
  */
 Module.GLTools = {
 	/**
-	 * Used for interoperability between WebGL and WILL SDK. In order to use a WebGL resource with
-	 * the WILL SDK that resource must have a valid identifier which is provided by this method.
-	 * Upon successful creation of an identifier, the resource is added to a specific collection
-	 * in the GL namespace (defined in WacomInkEngine.js) and is globally accessible from there.
-	 *
-	 * @param {(WebGLBuffer | WebGLRenderbuffer | WebGLFramebuffer | WebGLTexture | WebGLProgram | WebGLShader)} glResource
-	 */
-	indexGLResource: function(glResource) {
-		var resources;
-
-		if (glResource instanceof WebGLBuffer)
-			resources = GL.buffers;
-		else if (glResource instanceof WebGLRenderbuffer)
-			resources = GL.renderbuffers;
-		else if (glResource instanceof WebGLFramebuffer)
-			resources = GL.framebuffers;
-		else if (glResource instanceof WebGLTexture)
-			resources = GL.textures;
-		else if (glResource instanceof WebGLProgram)
-			resources = GL.programs;
-		else if (glResource instanceof WebGLShader)
-			resources = GL.shaders;
-		else
-			throw new Error("Cannot index this GL resource");
-
-		var id = GL.getNewId(resources);
-
-		glResource.name = id;
-		resources[id] = glResource;
-	},
-
-	/**
 	 * Used for interoperability between WebGL and WILL SDK.
 	 * Creates texture with predifined configuration.
 	 *
@@ -2390,8 +2468,6 @@ Module.GLTools = {
 		GLctx.texParameteri(GLctx.TEXTURE_2D, GLctx.TEXTURE_MIN_FILTER, sampleMode);
 		GLctx.texParameteri(GLctx.TEXTURE_2D, GLctx.TEXTURE_MAG_FILTER, sampleMode);
 		GLctx.bindTexture(GLctx.TEXTURE_2D, null);
-
-		Module.GLTools.indexGLResource(texture);
 
 		return texture;
 	},
