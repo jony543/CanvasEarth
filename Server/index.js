@@ -10,8 +10,8 @@ const routes = require('./routes');
 
 const app  = express();
 
-mongoose.Promise = bluebird;
-mongoose.connect(config.mongo.url);
+// mongoose.Promise = bluebird;
+// mongoose.connect(config.mongo.url);
 
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -20,10 +20,11 @@ app.use(morgan('tiny'));
 app.use('/', routes);
 
 // serve static wikitude files
-app.use('/ar', express.static('wikitude'));
+app.use('/ar', express.static('web'));
 
-app.listen(config.server.port, () => {
-  console.log(`Magic happens on port ${config.server.port}`);
+app.listen(config.server.port, function () {
+  //noinspection JSAnnotator
+    console.log(`Magic happens on port ${config.server.port}`);
 });
 
 module.exports = app;

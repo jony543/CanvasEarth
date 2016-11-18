@@ -30,7 +30,7 @@ public class StartAugmentActivity extends AppCompatActivity {
     }
 
     private void loadAugment() {
-        Intent augmentIntent = new Intent(StartAugmentActivity.this, Augment.class);
+        Intent augmentIntent = new Intent(StartAugmentActivity.this, BeyondARtest.class);
         startActivity(augmentIntent);
     }
 
