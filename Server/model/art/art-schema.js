@@ -12,7 +12,7 @@ const artSchema = new Schema({
     distance: { type: Number },
 
     lat: { type: Number },
-    long: { type: Number }
+    lng: { type: Number }
 });
 
 

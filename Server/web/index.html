@@ -10,6 +10,13 @@
 
     <script src="//console.re/connector.js" data-channel="canvas-earth-j" id="consolerescript"></script>
 
+    <!--scripts for argon.js-->
+    <script src="resources/lib/three/three.min.js"></script>
+    <script src="resources/lib/CSS3DArgonRenderer.js"></script>
+    <script src="resources/lib/CSS3DArgonHUD.js"></script>
+    <script src="resources/lib/argon.js"></script>
+    <script src="resources/lib/Tween.js"></script>
+
 </head>
 <body>
 <nav class="navbar navbar-fixed-top">
@@ -39,7 +46,10 @@
     <div class="arView" id="arView">
         <div class="row">
             <div class="col-xs-12">
-
+                <div>
+                    <!--<video autoplay hidden></video>-->
+                    <div id="argon" />
+                </div>
             </div>
         </div>
 
@@ -59,6 +69,8 @@
 
 <script type="text/javascript" src="js/main.js"></script>
 <script type="text/javascript" src="js/map.js"></script>
+
+<script src="js/augment.js"></script>
 
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3x5QJU5DVoM9taAmRsI9i5z_5ItNBeiw&callback=initMap" async
         defer></script>
