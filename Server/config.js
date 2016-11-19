@@ -6,7 +6,7 @@ const config = milieu('canvas-earth-server', {
     port: 8080
   },
   mongo: {
-    url: 'mongodb://localhost/CanvasEarthDB'
+    url: 'mongodb://ceadmin:ceadmin@ds021046.mlab.com:21046/canvasearth1'
   }
 });
 

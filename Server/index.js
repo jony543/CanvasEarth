@@ -10,8 +10,8 @@ const routes = require('./routes');
 
 const app  = express();
 
-// mongoose.Promise = bluebird;
-// mongoose.connect(config.mongo.url);
+mongoose.Promise = bluebird;
+mongoose.connect(config.mongo.url);
 
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));

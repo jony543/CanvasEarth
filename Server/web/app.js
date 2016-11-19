@@ -30,11 +30,11 @@ function init() {
     // (since the world coordinate system is abitrarily chosen to be near the user, and could
     // change at any time)
 
-    root = new THREE.Object3D()
+    root = new THREE.Object3D();
     userLocation = new THREE.Object3D;
 
     // Add the root node to our eyeOrigin
-    userLocation.add(root)
+    userLocation.add(root);
 
     // put the user and the camera in the world.  This allows us to update the userLocation
     // based on the user's currect location in local coordinates, and to update the camera
@@ -98,8 +98,8 @@ function init() {
     var css3dobject = new THREE.CSS3DObject( element );
     augmentedObject.add(css3dobject);
 
-    var x0 = 10;
-    var y0 = 10;
+    var x0 = 0;
+    var y0 = 0;
     var z0 = 1000;
 
 
@@ -149,40 +149,44 @@ function init() {
                         // coordinate frame relative to the camera.  Because they are Cesium
                         // entities, we can ask for their pose in any coordinate frame we know
                         // about.
-                        var gvuBrochureEntity = app.context.subscribeToEntityById(trackables["ny"].id);
+                        var trackable_entity = app.context.subscribeToEntityById(trackables["bedroom"].id);
                         // create a THREE object to put on the trackable
-                        var gvuBrochureObject = new THREE.Object3D;
-                        scene.add(gvuBrochureObject);
+                        var displayedObject = new THREE.Object3D;
+                        scene.add(displayedObject);
                         // the updateEvent is called each time the 3D world should be
                         // rendered, before the renderEvent.  The state of your application
                         // should be updated here.
                         app.context.updateEvent.addEventListener(function () {
                             // get the pose (in local coordinates) of the gvuBrochure target
-                            var gvuBrochurePose = app.context.getEntityPose(gvuBrochureEntity);
+                            var trackable_entity_pose = app.context.getEntityPose(trackable_entity);
 
                             // if the pose is known the target is visible, so set the
                             // THREE object to the location and orientation
-                            if (gvuBrochurePose.poseStatus & Argon.PoseStatus.KNOWN) {
+                            if (trackable_entity_pose.poseStatus & Argon.PoseStatus.KNOWN) {
                                 //console.re.log('known');
-                                gvuBrochureObject.position.copy(gvuBrochurePose.position);
-                                gvuBrochureObject.quaternion.copy(gvuBrochurePose.orientation);
+                                displayedObject.position.copy(trackable_entity_pose.position);
+                                displayedObject.quaternion.copy(trackable_entity_pose.orientation);
+
+                                console.re.log('pos: ' + trackable_entity_pose.position);
+                                console.re.log('orientation: ' + trackable_entity_pose.orientation);
                             }
                             // when the target is first seen after not being seen, the
                             // status is FOUND.  Here, we move the 3D text object from the
                             // world to the target.
                             // when the target is first lost after being seen, the status
                             // is LOST.  Here, we move the 3D text object back to the world
-                            if (gvuBrochurePose.poseStatus & Argon.PoseStatus.FOUND) {
+                            if (trackable_entity_pose.poseStatus & Argon.PoseStatus.FOUND) {
                                 console.re.log('found');
-                                gvuBrochureObject.add(augmentedObject);
-                                augmentedObject.position.z = -1000;
+
+                                displayedObject.add(augmentedObject);
+                                augmentedObject.position.z = -500;
                                 // augmentedObject.position.x = x0;
                                 // augmentedObject.position.y = y0;
                                 // augmentedObject.position.z = z0;
 
                                 // console.re.log('x: ' + x0 + ' y: ' + y0 + ' z: ' + z0);
                             }
-                            else if (gvuBrochurePose.poseStatus & Argon.PoseStatus.LOST) {
+                            else if (trackable_entity_pose.poseStatus & Argon.PoseStatus.LOST) {
                                 console.re.log('lost');
                                 augmentedObject.position.z = 0;
                                 userLocation.add(augmentedObject);
@@ -243,44 +247,77 @@ app.renderEvent.addEventListener(function () {
 // the animation callback.
 function renderFunc() {
     rAFpending = false;
+    // if we have 1 subView, we're in mono mode.  If more, stereo.
+    var monoMode = (app.view.getSubviews()).length == 1;
     // set the renderer to know the current size of the viewport.
     // This is the full size of the viewport, which would include
     // both views if we are in stereo viewing mode
     renderer.setSize(viewport.width, viewport.height);
     hud.setSize(viewport.width, viewport.height);
-
-    // There is 1 subview in monocular mode, 2 in stereo mode.
-    // If we are in mono view, show the buttons.  If not, hide them,
-    // since we can't interact with them in an HMD
-    if (subViews.length > 1 || !app.focus.hasFocus) {
-        hud.domElement.style.display = 'none';
-    } else {
-        hud.domElement.style.display = 'block';
-    }
-
-    // we pass the view number to the renderer so it knows
-    // which div's to use for each view
+    // there is 1 subview in monocular mode, 2 in stereo mode
     for (var _i = 0, _a = subViews; _i < _a.length; _i++) {
         var subview = _a[_i];
-        var frustum = subview.frustum;
-
         // set the position and orientation of the camera for
         // this subview
         camera.position.copy(subview.pose.position);
         camera.quaternion.copy(subview.pose.orientation);
         // the underlying system provide a full projection matrix
-        // for the camera.  Use it, and then update the FOV of the
-        // camera from it (needed by the CSS Perspective DIV)
+        // for the camera.
         camera.projectionMatrix.fromArray(subview.projectionMatrix);
-        camera.fov = THREE.Math.radToDeg(frustum.fovy);
-
         // set the viewport for this view
         var _b = subview.viewport, x = _b.x, y = _b.y, width = _b.width, height = _b.height;
         renderer.setViewport(x, y, width, height, _i);
-        hud.setViewport(x, y, width, height, _i);
-
-        // render this view.
+        // set the webGL rendering parameters and render this view
+        // renderer.setScissor(x, y, width, height);
+        // renderer.setScissorTest(true);
         renderer.render(scene, camera, _i);
-        hud.render(_i);
+        // adjust the hud, but only in mono
+        if (monoMode) {
+            hud.setViewport(x, y, width, height, subview.index);
+            hud.render(subview.index);
+        }
     }
+
+
+    //
+    // // set the renderer to know the current size of the viewport.
+    // // This is the full size of the viewport, which would include
+    // // both views if we are in stereo viewing mode
+    // renderer.setSize(viewport.width, viewport.height);
+    // hud.setSize(viewport.width, viewport.height);
+    //
+    // // There is 1 subview in monocular mode, 2 in stereo mode.
+    // // If we are in mono view, show the buttons.  If not, hide them,
+    // // since we can't interact with them in an HMD
+    // if (subViews.length > 1 || !app.focus.hasFocus) {
+    //     hud.domElement.style.display = 'none';
+    // } else {
+    //     hud.domElement.style.display = 'block';
+    // }
+    //
+    // // we pass the view number to the renderer so it knows
+    // // which div's to use for each view
+    // for (var _i = 0, _a = subViews; _i < _a.length; _i++) {
+    //     var subview = _a[_i];
+    //     var frustum = subview.frustum;
+    //
+    //     // set the position and orientation of the camera for
+    //     // this subview
+    //     camera.position.copy(subview.pose.position);
+    //     camera.quaternion.copy(subview.pose.orientation);
+    //     // the underlying system provide a full projection matrix
+    //     // for the camera.  Use it, and then update the FOV of the
+    //     // camera from it (needed by the CSS Perspective DIV)
+    //     camera.projectionMatrix.fromArray(subview.projectionMatrix);
+    //     camera.fov = THREE.Math.radToDeg(frustum.fovy);
+    //
+    //     // set the viewport for this view
+    //     var _b = subview.viewport, x = _b.x, y = _b.y, width = _b.width, height = _b.height;
+    //     renderer.setViewport(x, y, width, height, _i);
+    //     hud.setViewport(x, y, width, height, _i);
+    //
+    //     // render this view.
+    //     renderer.render(scene, camera, _i);
+    //     hud.render(_i);
+    // }
 }
