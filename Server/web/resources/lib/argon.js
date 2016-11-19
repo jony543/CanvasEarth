@@ -6655,7 +6655,7 @@ $__System.register('17', ['c', 'a', '10', 'b', '12', '14', '11'], function (expo
                         if (!container) container = document.createElement('div');
                         container.id = 'argon';
                         container.classList.add('argon-view');
-                        document.body.appendChild(container);
+                        // document.body.appendChild(container);
                         argonContainer = container;
                         resolve(container);
                     };
@@ -6669,7 +6669,7 @@ $__System.register('17', ['c', 'a', '10', 'b', '12', '14', '11'], function (expo
                 style.type = 'text/css';
                 document.head.insertBefore(style, document.head.firstChild);
                 var sheet = style.sheet;
-                sheet.insertRule("\n        #argon {\n            position: fixed;\n            left: 0px;\n            bottom: 0px;\n            width: 100%;\n            height: 100%;\n            margin: 0;\n            border: 0;\n            padding: 0;\n        }\n    ", 0);
+                sheet.insertRule("\n        #argon {\n            position: fixed;\n            left: 0px;\n            bottom: 0px;\n            width: inherit;\n            height: inherit\n            margin: 0;\n            border: 0;\n            padding: 0;\n        }\n    ", 0);
                 sheet.insertRule("\n        .argon-view > * {\n            position: absolute;\n            pointer-events: none;\n        }\n    ", 1);
             }
             /**
@@ -6977,8 +6977,8 @@ $__System.register('18', ['c', '10', '11', '17'], function (exports_1, context_1
                     this.type = 'hosted';
                     this.iframeElement = document.createElement('iframe');
                     this.iframeElement.style.border = '0';
-                    this.iframeElement.width = '100%';
-                    this.iframeElement.height = '100%';
+                    this.iframeElement.width = 'inherit'; //'100%';
+                    this.iframeElement.height = 'inherit'; //'100%';
                     viewService.containingElementPromise.then(function (container) {
                         container.insertBefore(_this.iframeElement, container.firstChild);
                     });
