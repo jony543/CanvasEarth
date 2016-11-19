@@ -1,6 +1,30 @@
-// var imageUrl = "images/city hall.jpg";
-// var width = $("#canvas").width();
-// var height = $("#canvas").height();
-//
-// WILL.init(width, height);
-//WILL.initImageLayer(imageUrl, imageWidth, imageHeight);
+var views = ["createView", "mapView", "arView"];
+
+var currentView = views[1];
+
+function updateView() {
+    views.forEach(function(viewName){
+        if (viewName == currentView){
+            document.getElementById(viewName).classList.toggle("hidden", false);
+        } else {
+            document.getElementById(viewName).classList.toggle("hidden",true);
+        }
+    });
+}
+
+updateView();
+
+$("#createViewButton").click(function(e){
+    currentView = views[0];
+    updateView();
+});
+
+$("#mapViewButton").click(function(e){
+    currentView = views[1];
+    updateView();
+});
+
+$("#arViewButton").click(function(e){
+    currentView = views[2];
+    updateView();
+});
