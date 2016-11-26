@@ -10,6 +10,9 @@
 
     <script src="//console.re/connector.js" data-channel="canvas-earth-j" id="consolerescript"></script>
 
+    <!--fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+    <script src="https://use.fontawesome.com/91592a59c0.js"></script>
     <!--scripts for argon.js-->
     <script src="resources/lib/three/three.min.js"></script>
     <script src="resources/lib/CSS3DArgonRenderer.js"></script>
@@ -21,9 +24,12 @@
 <body>
 <nav class="navbar navbar-fixed-top">
     <div class="container-fluid navbarContainer">
-        <button type="button" class="btn btn-default navbar-btn" name="button" id="createViewButton">Create</button>
-        <button type="button" class="btn btn-default navbar-btn" name="button" id="mapViewButton">Map</button>
-        <button type="button" class="btn btn-default navbar-btn" name="button" id="arViewButton">View AR</button>
+        <div id="canvasEarthHeader">
+            <span id="canvasEarthLogo">Canvas <!-- <span> <img src="web/images/canvasCircle.png" alt=""></span> --> Earth</span>
+        </div>
+        <button type="button" class="btn btn-default navbar-btn" name="button" id="createViewButton"><i class="fa fa-paint-brush" aria-hidden="true"></i></button>
+        <button type="button" class="btn btn-default navbar-btn" name="button" id="mapViewButton"><i class="fa fa-map" aria-hidden="true"></i></button>
+        <button type="button" class="btn btn-default navbar-btn" name="button" id="arViewButton"><i class="fa fa-eye" aria-hidden="true"></i></button>
     </div>
 </nav>
 <div class="container-fluid mainView">
@@ -40,6 +46,7 @@
                     <div id="map">
 
                     </div>
+                    <div id="usersLocationButton"><i class="fa fa-location-arrow" aria-hidden="true"></i></div>
                 </div>
         </div>
     </div>
@@ -47,7 +54,7 @@
         <div class="row">
             <div class="col-xs-12">
                 <div>
-                    <!--<video autoplay hidden></video>-->
+                        <!--<video autoplay hidden></video>-->
                     <div id="argon" />
                 </div>
             </div>

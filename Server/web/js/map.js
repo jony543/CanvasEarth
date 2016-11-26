@@ -4,61 +4,82 @@
 // var pepper = "images/pepper.png";
 var usersLocationIcon = "images/usersLocationIcon.png";
 
-// marker data: lat , lng, artist, background
-var markerData = [
-    {
-        title:'blue bus',
-        position: {lat: 32.480551, lng: 34.968628}
-    },
-    {
-        title: 'yosko',
-        position: {lat: 32.574282, lng: 34.954885}
-    },
-    {
-        title: 'badra',
-        position: {lat: 31.898035, lng: 34.810469}
-    },
-    {
-        title: 'abu hassan',
-        position: {lat: 32.050319, lng: 34.750913}
-    },
-    {
-        title: 'bahadonas',
-        position: {lat: 32.174515, lng: 34.891622}
-    }
-];
+var imgRequestPrefix = "http://dfcysvy1a0vsz.cloudfront.net/images/canvas/"; //  + canvas_file_name.jpeg
+
 
 
 var map;
-var markersArray = [];
 
 initMap = function() {
     map = new google.maps.Map(document.getElementById('map') , {
         center : {lat: 32.0853, lng: 34.7818},
-        zoom: 8
+        zoom: 8,
+        styles: [{"featureType":"all","elementType":"all","stylers":[{"hue":"#ff0000"},{"saturation":-100},{"lightness":-30}]},{"featureType":"all","elementType":"labels.text.fill","stylers":[{"color":"#ffffff"}]},{"featureType":"all","elementType":"labels.text.stroke","stylers":[{"color":"#353535"}]},{"featureType":"landscape","elementType":"geometry","stylers":[{"color":"#656565"}]},{"featureType":"poi","elementType":"geometry.fill","stylers":[{"color":"#505050"}]},{"featureType":"poi","elementType":"geometry.stroke","stylers":[{"color":"#808080"}]},{"featureType":"road","elementType":"geometry","stylers":[{"color":"#454545"}]}]
     });
-
-    markerData.forEach(function(currentMarkerData){
-        var title = currentMarkerData.title;
-        var lat = currentMarkerData.position.lat;
-        var lng = currentMarkerData.position.lng;
-
-        var marker = new Marker(map, title, lat, lng );
-
-        markersArray.push(marker);
-    })
 
     infoWindow = new google.maps.InfoWindow({
         content: ''
     });
+
 }
 
-var Marker = function(map, title, lat, lng) {
+
+
+
+
+var artData;
+
+// gets artData from server and inits markers on map
+var updateMarkers = function() {
+
+    $.ajax (
+        {
+            url: "/art",
+            success: function (response){
+                console.log("got the Art Data");
+                artData = response;
+                initMarkers(artData);
+            },
+            error: function(){
+                console.log("error on art request from server");
+            }
+        }
+    )
+
+
+}
+
+
+
+var markersArray;
+
+// creates Marker objects from artData and sets on map.
+var initMarkers = function(artData) {
+    markersArray = [];
+
+    artData.forEach(function(currentArtData){
+        var title = currentArtData.title;
+        var lat = currentArtData.lat;
+        var lng = currentArtData.lng;
+        var canvas_file_name = currentArtData.canvas_file;
+
+        var marker = new Marker(map, title, lat, lng, canvas_file_name );
+
+        markersArray.push(marker);
+    })
+}
+
+
+updateMarkers();
+
+
+var Marker = function(map, title, lat, lng, canvas_file_name) {
     var googleMarker;
 
     this.lat = lat;
     this.lng = lng;
     this.title = title;
+    this.canvas_file_name = canvas_file_name;
 
     googleMarker = new google.maps.Marker({
         position: new google.maps.LatLng(lat, lng),
@@ -68,19 +89,28 @@ var Marker = function(map, title, lat, lng) {
     });
 
 
-    // this.clicked = function(){
-    //
-    // }
-    //
-    // var self = this;
-    // googleMarker.addListener('click', function(){
-    //     self.clicked();
-    // });
+    this.clicked = function(){
+        infoWindow.setContent(
+            this.title +
+                "<br>" +
+            '<img id=\'canvasImg\' src=\'' + imgRequestPrefix + this.canvas_file_name + '\'>'
+        );
+
+        infoWindow.open(map, googleMarker);
+
+    }
+
+    var self = this;
+    googleMarker.addListener('click', function(){
+        self.clicked();
+    });
 
     googleMarker.setMap(map);
     this.googleMarker = googleMarker;
 }
 
+
+// delete infoWindow part. add center map to init map part. and add center button
 function centerMapToCurrentLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(position) {
@@ -102,3 +132,7 @@ function centerMapToCurrentLocation() {
 }
 
 centerMapToCurrentLocation();
+
+$("#usersLocationButton").click(function(e){
+    centerMapToCurrentLocation();
+});

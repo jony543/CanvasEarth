@@ -21,8 +21,8 @@ app.use(bodyParser.json());
 app.use(morgan('tiny'));
 app.use('/', routes);
 
-// serve static website files
-app.use('/ar', express.static('web'));
+// serve static wikitude files
+app.use('/ar', express.static( __dirname + '/web'));
 
 app.listen(port, function () {
     console.log(`Magic happens on port ` + port);
