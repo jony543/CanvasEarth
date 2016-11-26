@@ -20,7 +20,7 @@ app.use(morgan('tiny'));
 app.use('/', routes);
 
 // serve static wikitude files
-app.use('/ar', express.static('web'));
+app.use('/ar', express.static( __dirname + '/web'));
 
 app.listen(config.server.port, function () {
   //noinspection JSAnnotator
