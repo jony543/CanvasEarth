@@ -13,7 +13,8 @@ var map;
 initMap = function() {
     map = new google.maps.Map(document.getElementById('map') , {
         center : {lat: 32.0853, lng: 34.7818},
-        zoom: 8
+        zoom: 8,
+        styles: [{"featureType":"all","elementType":"all","stylers":[{"hue":"#ff0000"},{"saturation":-100},{"lightness":-30}]},{"featureType":"all","elementType":"labels.text.fill","stylers":[{"color":"#ffffff"}]},{"featureType":"all","elementType":"labels.text.stroke","stylers":[{"color":"#353535"}]},{"featureType":"landscape","elementType":"geometry","stylers":[{"color":"#656565"}]},{"featureType":"poi","elementType":"geometry.fill","stylers":[{"color":"#505050"}]},{"featureType":"poi","elementType":"geometry.stroke","stylers":[{"color":"#808080"}]},{"featureType":"road","elementType":"geometry","stylers":[{"color":"#454545"}]}]
     });
 
     infoWindow = new google.maps.InfoWindow({
@@ -131,3 +132,7 @@ function centerMapToCurrentLocation() {
 }
 
 centerMapToCurrentLocation();
+
+$("#usersLocationButton").click(function(e){
+    centerMapToCurrentLocation();
+});

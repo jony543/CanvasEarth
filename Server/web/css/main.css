@@ -1,5 +1,6 @@
 * {
     box-sizing: border-box;
+    font-family: 'Ubuntu', sans-serif;
 }
 
 .navbar-btn {
@@ -12,6 +13,12 @@
     background: black;
     color: white;
 
+    font-size: 1.9em;
+}
+
+.selectedButton {
+    background: white;
+    color: black;
 }
 
 #canvasEarthHeader{
@@ -66,4 +73,16 @@ html {
 #canvasImg {
     max-width: 300px;
     max-height: 300px;
+}
+
+#usersLocationButton {
+    position: absolute;
+    top: calc(100vh - 170px);
+    margin-bottom: 20px;
+    margin-left: 30px;
+    color: #fff;
+    z-index: 30;
+
+    font-size: 3em;
+
 }
