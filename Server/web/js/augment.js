@@ -5,12 +5,17 @@
 // set up Argon
 var argonApp;
 
+var vuforiaApi = null;
+var vuforiaTrackables = null;
 var camera, scene, renderer, hud;
 var root, userLocation;
 
 var viewport = null;
 var subViews = null;
 var rAFpending = false;
+
+var augmentedObject;
+var displayedObject;
 
 // need init to run after everything loads
 //window.addEventListener( 'load', init );
@@ -95,7 +100,7 @@ function initAugment() {
     // do not need to respond to windowResize events.  Argon handles this for us
     //    window.addEventListener( 'resize', onWindowResize, false );
 
-    var augmentedObject = new THREE.Object3D();
+    augmentedObject = new THREE.Object3D();
 
     var element = document.createElement( 'div' );
     var image = document.createElement( 'img' );
@@ -132,8 +137,6 @@ function initAugment() {
             // root.add(augmentedObject);
 
         } else {
-            // augmentedObject.position.x = 0;
-            // augmentedObject.position.y = 0;
             augmentedObject.position.z = -0.50;
 
             // tell argon to initialize vuforia for our app, using our license information.
@@ -142,9 +145,11 @@ function initAugment() {
                 //"-----BEGIN PGP MESSAGE-----\nVersion: OpenPGP.js v2.3.2\nComment: http://openpgpjs.org\n\n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\n23hXvrccVkyHL8Tn+snyHQ==\n=VgAz\n-----END PGP MESSAGE-----"
             }).then(function (api) {
                 // the vuforia API is ready, so we can start using it.
+                vuforiaApi = api;
+
                 // tell argon to download a vuforia dataset.  The .xml and .dat file must be together
                 // in the web directory, even though we just provide the .xml file url here
-                api.objectTracker.createDataSet("resources/datasets/CanvasEarthTargets.xml").then(function (dataSet) {
+                vuforiaApi.objectTracker.createDataSet("resources/datasets/CanvasEarthTargets.xml").then(function (dataSet) {
                     // the data set has been succesfully downloaded
                     // tell vuforia to load the dataset.
                     console.re.log('dataset created');
@@ -152,61 +157,13 @@ function initAugment() {
                         console.re.log('dataset loaded');
                         // when it is loaded, we retrieve a list of trackables defined in the
                         // dataset and set up the content for the target
-                        var trackables = dataSet.getTrackables();
-                        // tell argon we want to track a specific trackable.  Each trackable
-                        // has a Cesium entity associated with it, and is expressed in a
-                        // coordinate frame relative to the camera.  Because they are Cesium
-                        // entities, we can ask for their pose in any coordinate frame we know
-                        // about.
-                        var trackable_entity = argonApp.context.subscribeToEntityById(trackables["bedroom"].id);
-                        // create a THREE object to put on the trackable
-                        var displayedObject = new THREE.Object3D;
-                        scene.add(displayedObject);
-                        // the updateEvent is called each time the 3D world should be
-                        // rendered, before the renderEvent.  The state of your application
-                        // should be updated here.
-                        argonApp.context.updateEvent.addEventListener(function () {
-                            // get the pose (in local coordinates) of the gvuBrochure target
-                            var trackable_entity_pose = argonApp.context.getEntityPose(trackable_entity);
-
-                            // if the pose is known the target is visible, so set the
-                            // THREE object to the location and orientation
-                            if (trackable_entity_pose.poseStatus & Argon.PoseStatus.KNOWN) {
-                                //console.re.log('known');
-                                displayedObject.position.copy(trackable_entity_pose.position);
-                                displayedObject.quaternion.copy(trackable_entity_pose.orientation);
-
-                                // console.re.log('pos: ' + trackable_entity_pose.position);
-                                // console.re.log('orientation: ' + trackable_entity_pose.orientation);
-                            }
-                            // when the target is first seen after not being seen, the
-                            // status is FOUND.  Here, we move the 3D text object from the
-                            // world to the target.
-                            // when the target is first lost after being seen, the status
-                            // is LOST.  Here, we move the 3D text object back to the world
-                            if (trackable_entity_pose.poseStatus & Argon.PoseStatus.FOUND) {
-                                console.re.log('found');
-
-                                displayedObject.add(augmentedObject);
-                                augmentedObject.position.z = -1000;
-                                // augmentedObject.position.x = x0;
-                                // augmentedObject.position.y = y0;
-                                // augmentedObject.position.z = z0;
-
-                                // console.re.log('x: ' + x0 + ' y: ' + y0 + ' z: ' + z0);
-                            }
-                            else if (trackable_entity_pose.poseStatus & Argon.PoseStatus.LOST) {
-                                console.re.log('lost');
-                                augmentedObject.position.z = 0;
-                                userLocation.add(augmentedObject);
-                            }
-                        });
+                        vuforiaTrackables = dataSet.getTrackables();
                     }).catch(function (err) {
                         console.log("could not load dataset: " + err.message);
                     });
                     // activate the dataset.
-                    api.objectTracker.activateDataSet(dataSet);
-                });
+                    vuforiaApi.objectTracker.activateDataSet(dataSet);
+                })
             }).catch(function (err) {
                 console.log("vuforia failed to initialize: " + err.message);
             });
@@ -216,6 +173,73 @@ function initAugment() {
     initEvents();
 }
 
+function initVuforia(trackableId) {
+    if (!vuforiaApi) {
+        console.re.log("could not init vuforia: " + vuforiaApi);
+        return;
+    }
+
+    if (!vuforiaTrackables) {
+        console.re.log("could not find trackables: " + vuforiaTrackables);
+        return;
+    }
+
+    // tell argon we want to track a specific trackable.  Each trackable
+    // has a Cesium entity associated with it, and is expressed in a
+    // coordinate frame relative to the camera.  Because they are Cesium
+    // entities, we can ask for their pose in any coordinate frame we know
+    // about.
+    var trackable_entity = argonApp.context.subscribeToEntityById(vuforiaTrackables[trackableId].id);
+
+    // create a THREE object to put on the trackable
+    if (displayedObject) {
+        scene.remove(displayedObject);
+    }
+    displayedObject = new THREE.Object3D;
+    scene.add(displayedObject);
+
+    // the updateEvent is called each time the 3D world should be
+    // rendered, before the renderEvent.  The state of your application
+    // should be updated here.
+    argonApp.context.updateEvent.addEventListener(function () {
+        // get the pose (in local coordinates) of the gvuBrochure target
+        var trackable_entity_pose = argonApp.context.getEntityPose(trackable_entity);
+
+        // if the pose is known the target is visible, so set the
+        // THREE object to the location and orientation
+        if (trackable_entity_pose.poseStatus & Argon.PoseStatus.KNOWN) {
+            //console.re.log('known');
+            displayedObject.position.copy(trackable_entity_pose.position);
+            displayedObject.quaternion.copy(trackable_entity_pose.orientation);
+
+            // console.re.log('pos: ' + trackable_entity_pose.position);
+            // console.re.log('orientation: ' + trackable_entity_pose.orientation);
+        }
+        // when the target is first seen after not being seen, the
+        // status is FOUND.  Here, we move the 3D text object from the
+        // world to the target.
+        // when the target is first lost after being seen, the status
+        // is LOST.  Here, we move the 3D text object back to the world
+        if (trackable_entity_pose.poseStatus & Argon.PoseStatus.FOUND) {
+            console.re.log('found');
+
+            displayedObject.add(augmentedObject);
+            augmentedObject.position.z = -1000;
+            // augmentedObject.position.x = x0;
+            // augmentedObject.position.y = y0;
+            // augmentedObject.position.z = z0;
+
+            // console.re.log('x: ' + x0 + ' y: ' + y0 + ' z: ' + z0);
+        }
+        else if (trackable_entity_pose.poseStatus & Argon.PoseStatus.LOST) {
+            console.re.log('lost');
+            augmentedObject.position.z = 0;
+            userLocation.add(augmentedObject);
+        }
+    });
+
+
+}
 
 function initEvents() {
 

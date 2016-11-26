@@ -9,10 +9,10 @@ router.route('/')
 router.route('/:id')
     //..put((...args) => controller.update(...args))
     .get((...args) => controller.findById(...args))
-    .delete((...args) => controller.remove(...args));
+    // .delete((...args) => controller.remove(...args));
 
-router.route('/:id/files')
-    .get((...args) => controller.listFiles(...args))
-    .post((...args) => controller.postFile(...args));
+// router.route('/:id/files')
+//     .get((...args) => controller.listFiles(...args))
+//     .post((...args) => controller.postFile(...args));
 
 module.exports = router;

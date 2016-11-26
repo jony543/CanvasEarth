@@ -1,0 +1,13 @@
+branch-defaults:
+  default:
+    environment: CanvasEarthServer-dev
+    group_suffix: null
+global:
+  application_name: CanvasEarthServer
+  branch: null
+  default_ec2_keyname: null
+  default_platform: Node.js
+  default_region: us-west-1
+  profile: eb-cli2
+  repository: null
+  sc: null

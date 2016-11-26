@@ -10,6 +10,8 @@ const routes = require('./routes');
 
 const app  = express();
 
+var port = process.env.PORT ||config.server.port || 8080;  // set the port
+
 mongoose.Promise = bluebird;
 mongoose.connect(config.mongo.url);
 
@@ -19,12 +21,11 @@ app.use(bodyParser.json());
 app.use(morgan('tiny'));
 app.use('/', routes);
 
-// serve static wikitude files
+// serve static website files
 app.use('/ar', express.static('web'));
 
-app.listen(config.server.port, function () {
-  //noinspection JSAnnotator
-    console.log(`Magic happens on port ${config.server.port}`);
+app.listen(port, function () {
+    console.log(`Magic happens on port ` + port);
 });
 
 module.exports = app;
