@@ -1,6 +1,7 @@
 var WILL = {
     backgroundColor: Module.Color.WHITE,
     color: Module.Color.from(204, 204, 204),
+    brushWidth: 50,
 
     init: function(width, height) {
         this.initInkEngine(width, height);
@@ -8,7 +9,7 @@ var WILL = {
         //debugger;
     },
 
-    saveAsImage: function() {
+    saveArt: function() {
         //debugger;
         //var pixels = this.canvas.readPixels(Module.RectTools.create(0,0,200,200));
         //var tmpCanvas = document.createElement('canvas');
@@ -22,12 +23,27 @@ var WILL = {
         //
         //return tmpCanvas.toDataURL('image/png');
 
-        return this.canvas.surface.toDataURL('image/png');
+        // this.imageLayer.clear();
+        var artData = this.strokesLayer.readPixels();
+        this.clear();
+        // this.initInkEngine(this.width, this.height);
+        this.strokesLayer.writePixels(artData);
+        this.canvas.blend(this.strokesLayer);
+
+        var art = this.canvas.surface.toDataURL('image/png');
+
+        return art;
     },
 
     initInkEngine: function(width, height) {
+        this.width = width;
+        this.height = height;
+
         this.canvas = new Module.InkCanvas(document.getElementById("canvas"), width, height, {preserveDrawingBuffer: true});
         this.canvas.clear(this.backgroundColor);
+
+        this.strokesLayer = this.canvas.createLayer();
+
 
         this.brush = new Module.DirectBrush();
 
@@ -41,7 +57,7 @@ var WILL = {
             this.pressurePathBuilder.setPropertyConfig(Module.PropertyName.Width, 2.05, 34.53, 0.72, NaN, Module.PropertyFunction.Power, 1.19, false);
         }
 
-        this.strokeRenderer = new Module.StrokeRenderer(this.canvas, this.canvas);
+        this.strokeRenderer = new Module.StrokeRenderer(this.canvas, this.strokesLayer);
         // this.strokeRenderer.configure({brush: this.brush, color: this.color});
         this.strokeRenderer.configure({brush: this.brush, color: this.color});
 
@@ -53,37 +69,34 @@ var WILL = {
         var self = this;
 
         $(Module.canvas).on("mousedown", function(e) {
-            console.re.log('mousdown');
+            // console.re.log('mousdown');
             e.preventDefault();
             self.beginStroke(e);
         });
         $(Module.canvas).on("mousemove", function(e) {
-            console.re.log('mousemove');
+            // console.re.log('mousemove');
             e.preventDefault();
             self.moveStroke(e);}
         );
         $(document).on("mouseup", function(e) {
-            console.re.log('mousemove');
+            // console.re.log('mousemove');
             e.preventDefault();
             self.endStroke(e);
         });
 
         Module.canvas.addEventListener("touchstart", function(e) {
-            console.re.log('touchstart');
-            console.re.log(e);
-            // e.preventDefault();
+            // console.re.log('touchstart');
+            // console.re.log(e);
           self.beginStroke(e);
         });
         Module.canvas.addEventListener("touchmove", function(e) {
-            console.re.log('touchmove');
+            // console.re.log('touchmove');
             // console.re.log(e);
-            // e.preventDefault();
           self.moveStroke(e);
         });
         document.addEventListener("touchend", function(e) {
-            console.re.log('touchend');
-            console.re.log(e);
-          // e.preventDefault();
+            // console.re.log('touchend');
+            // console.re.log(e);
           self.endStroke(e);
         });
 
@@ -93,7 +106,10 @@ var WILL = {
     },
 
     initImageLayer: function(url, w, h) {
-        //debugger;
+        this.canvasUrl = url;
+        this.canvasWidth = w;
+        this.canvasHeight = h;
+
         var scale = Math.min(this.canvas.height/h, this.canvas.width/w);
 
         Module.GLTools.prepareTexture(
@@ -178,9 +194,9 @@ var WILL = {
     },
 
     buildPath: function(pos) {
-        var pathBuilderValue = 50; // isNaN(this.pressure)?Date.now() / 1000:this.pressure;
+        // var pathBuilderValue = 50; // isNaN(this.pressure)?Date.now() / 1000:this.pressure;
 
-        var pathPart = this.pathBuilder.addPoint(this.inputPhase, pos, pathBuilderValue);
+        var pathPart = this.pathBuilder.addPoint(this.inputPhase, pos, this.brushWidth);
         var pathContext = this.pathBuilder.addPathPart(pathPart);
 
         this.pathPart = pathContext.getPathPart();
@@ -188,6 +204,7 @@ var WILL = {
 
     drawPath: function() {
         this.strokeRenderer.draw(this.pathPart, this.inputPhase == Module.InputPhase.End);
+        this.strokeRenderer.blendUpdatedArea();
     },
 
     clear: function() {
@@ -205,8 +222,56 @@ var imageUrl = "images/city hall.jpg";
 var canvasWidth = $("#canvas").width();
 var canvasHeight = $("#canvas").height();
 
-// WILL.init(width, height);
-
 Module.addPostScript(function() {
     WILL.init(canvasWidth, canvasHeight);
 });
+
+$("#files").change(function() {
+    //Get the photo from the input form
+    var input = document.getElementById('files');
+    var files = input.files;
+    if (files && files.length > 0) {
+        var file = files[0];
+
+        var urlReader = new FileReader();
+
+        var _URL = window.URL || window.webkitURL;
+        img = new Image();
+        img.onload = function (imgData) {
+            var w = imgData.target.width;
+            var h = imgData.target.height;
+            urlReader.onload = function(event){
+                imageUrl = event.target.result;
+                WILL.initImageLayer(imageUrl, w, h);
+            };
+            urlReader.readAsDataURL(file);
+        };
+        img.src = _URL.createObjectURL(file);
+    }
+});
+
+var button = document.getElementById('share-art');
+button.addEventListener('click', function (e) {
+    var imageSource = WILL.saveArt();
+    var image_name = "myArt_" + new Date().getMilliseconds();
+
+    // printImageToConsole(imageSource);
+    // printImageToConsole(WILL.canvasUrl);
+
+
+    $.ajax({url: "/art/augment",
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ artName: image_name, artData: imageSource, canvasData: WILL.canvasUrl }),
+        success: function(data, status, xhr) {
+            location.reload();
+        }
+    });
+
+});
+
+function printImageToConsole(data) {
+    var img = document.createElement('img');
+    img.src = data;
+    console.log(img);
+}

@@ -2,13 +2,20 @@
 node_modules
 .idea
 wikitude/assets
+web/resources/images/canvas
+web/resources/images/art
 .env
 .vscode
 *.log
 *.sublime-workspace
 *.sublime-project
-
-# Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
+
+
+# Elastic Beanstalk Files
+
+.elasticbeanstalk/*
+
+!.elasticbeanstalk/*.cfg.yml
+
+!.elasticbeanstalk/*.global.yml
+

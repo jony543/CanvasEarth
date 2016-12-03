@@ -2,17 +2,28 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Create</title>
-    <link rel="stylesheet" href="css/bootstrap.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-    <link rel="stylesheet" href="css/main.css">
 
-    <script src="//console.re/connector.js" data-channel="canvas-earth-j" id="consolerescript"></script>
+    <title>Canvas Earth</title>
+
+    <link rel="stylesheet" href="css/bootstrap.css">
 
     <!--fonts -->
     <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
     <script src="https://use.fontawesome.com/91592a59c0.js"></script>
+    <!--Import Google Icon Font-->
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <link type="text/css" rel="stylesheet" href="css/materialize.css"  media="screen,projection"/>
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script type="text/javascript" src="js/materialize.min.js"></script>
+
+    <link rel="stylesheet" href="css/main.css">
+
+    <script src="//console.re/connector.js" data-channel="canvas-earth-j" id="consolerescript"></script>
+
     <!--scripts for argon.js-->
     <script src="resources/lib/three/three.min.js"></script>
     <script src="resources/lib/CSS3DArgonRenderer.js"></script>
@@ -37,6 +48,16 @@
         <div class="row">
             <div class="col-xs-12">
                 <canvas id="canvas" width="300" height="300"></canvas>
+                <div class="create-screen-panel">
+                    <div class="file-field input-field">
+                        <div class="btn-floating grey darken-4" id="upload-canvas-button">
+                            <i class="material-icons">perm_media</i>
+                            <input type="file" id="files">
+                        </div>
+                    </div>
+                    <a class="btn-floating btn-large waves-effect waves-light grey darken-4" id="share-art"><i class="material-icons">done</i></a>
+                    <!--<button class="create-screen-button canvas-earth-button" id="share-art">Share</button>-->
+                </div>
             </div>
         </div>
     </div>

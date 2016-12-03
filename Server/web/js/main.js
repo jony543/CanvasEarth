@@ -15,6 +15,11 @@ function updateView() {
     });
 }
 
+function changeView(viewName) {
+    currentView = viewName;
+    updateView();
+}
+
 updateView();
 
 $("#createViewButton").click(function(e){

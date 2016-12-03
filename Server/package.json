@@ -12,6 +12,7 @@
   },
   "author": "Canvas Earth Dev. <ataria@mail.tau.ac.il>",
   "dependencies": {
+    "base64-img": "^1.0.3",
     "bluebird": "^3.4.1",
     "body-parser": "^1.15.2",
     "express": "^4.14.0",
