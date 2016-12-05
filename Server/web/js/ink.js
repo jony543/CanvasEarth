@@ -1,6 +1,6 @@
 var WILL = {
     backgroundColor: Module.Color.WHITE,
-    color: Module.Color.from(204, 204, 204),
+    color: Module.Color.from(0, 0, 0),
     brushWidth: 50,
 
     init: function(width, height) {
@@ -9,30 +9,33 @@ var WILL = {
         //debugger;
     },
 
+    getImageCanvas: function(layer, rect) {
+        var tempCanvas = document.createElement("canvas");
+        var context = tempCanvas.getContext("2d");
+
+        if (!layer) {
+            layer = this.canvas;
+        }
+
+        if (!rect) {
+            rect = layer.bounds;
+        }
+
+        tempCanvas.width = rect.width;
+        tempCanvas.height = rect.height;
+
+        var pixels = layer.readPixels(rect);
+
+        // Copy the pixels to a 2D canvas
+        var imageData = context.createImageData(rect.width, rect.height);
+        imageData.data.set(pixels);
+        context.putImageData(imageData, 0, 0);
+
+        return tempCanvas.toDataURL('image/png');
+    },
+
     saveArt: function() {
-        //debugger;
-        //var pixels = this.canvas.readPixels(Module.RectTools.create(0,0,200,200));
-        //var tmpCanvas = document.createElement('canvas');
-        //tmpCanvas.width = 200; // this.canvas.width;
-        //tmpCanvas.height = 200; //this.canvas.height;
-        //var context = tmpCanvas.getContext('2d');
-        //var imgData = context.createImageData(200,200); //this.canvas.width, this.canvas.height);
-        //imgData.data.set(pixels);
-        //
-        //document.body.appendChild(tmpCanvas);
-        //
-        //return tmpCanvas.toDataURL('image/png');
-
-        // this.imageLayer.clear();
-        var artData = this.strokesLayer.readPixels();
-        this.clear();
-        // this.initInkEngine(this.width, this.height);
-        this.strokesLayer.writePixels(artData);
-        this.canvas.blend(this.strokesLayer);
-
-        var art = this.canvas.surface.toDataURL('image/png');
-
-        return art;
+        return this.getImageCanvas(this.strokesLayer);
     },
 
     initInkEngine: function(width, height) {
@@ -209,15 +212,15 @@ var WILL = {
 
     clear: function() {
         this.canvas.clear(this.backgroundColor);
+    },
+
+    setcolor: function(color) {
+        this.color = color;
+        this.strokeRenderer.configure({brush: this.brush, color: this.color});
     }
 };
 
-Module.addPostScript(function() {
-    WILL.init(1600, 300);
-});
 
-
-// somers:
 var imageUrl = "images/city hall.jpg";
 var canvasWidth = $("#canvas").width();
 var canvasHeight = $("#canvas").height();
@@ -250,14 +253,10 @@ $("#files").change(function() {
     }
 });
 
-var button = document.getElementById('share-art');
-button.addEventListener('click', function (e) {
+var shareBtn = document.getElementById('share-art');
+shareBtn.addEventListener('click', function (e) {
     var imageSource = WILL.saveArt();
-    var image_name = "myArt_" + new Date().getMilliseconds();
-
-    // printImageToConsole(imageSource);
-    // printImageToConsole(WILL.canvasUrl);
-
+    var image_name = "myArt_" + new Date().getMilliseconds(); // TODO - define a proper name
 
     $.ajax({url: "/art/augment",
         type: 'POST',
@@ -270,8 +269,35 @@ button.addEventListener('click', function (e) {
 
 });
 
-function printImageToConsole(data) {
-    var img = document.createElement('img');
-    img.src = data;
-    console.log(img);
-}
+var myPalette = [
+    ["#000","#444","#666","#999","#eee","#f3f3f3","#fff"],
+    ["#f00","#f90","#ff0","#0f0","#00f","#90f","#f0f"],
+    ["#ea9999","#f9cb9c","#ffe599","#b6d7a8","#9fc5e8","#b4a7d6","#d5a6bd"],
+    ["#e06666","#f6b26b","#ffd966","#93c47d","#6fa8dc","#8e7cc3","#c27ba0"],
+    ["#c00","#e69138","#f1c232","#6aa84f","#3d85c6","#674ea7","#a64d79"],
+    ["#900","#b45f06","#bf9000","#38761d","#0b5394","#351c75","#741b47"],
+    ["#600","#783f04","#7f6000","#274e13","#073763","#20124d","#4c1130"]
+];
+
+$("#showPaletteOnly").spectrum({
+    color: "#000",
+    showPaletteOnly: true,
+    flat: true,
+    change: function(color) {
+        var rgb = color.toRgb();
+        WILL.setcolor(Module.Color.from(rgb.r, rgb.g, rgb.b, rgb.a));
+    },
+    palette: myPalette
+});
+
+var paletteDiv = document.getElementById('paletteContainer');
+var showPaletteBtn = document.getElementById('show-palette-btn');
+showPaletteBtn.addEventListener('click', function (e) {
+    $(showPaletteBtn).hide();
+    $(paletteDiv).show();
+});
+var closePaletteBtn = document.getElementById('close-palette');
+closePaletteBtn.addEventListener('click', function (e) {
+    $(showPaletteBtn).show();
+    $(paletteDiv).hide();
+});

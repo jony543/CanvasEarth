@@ -7,6 +7,7 @@
     <title>Canvas Earth</title>
 
     <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel='stylesheet' href='css/spectrum.css' />
 
     <!--fonts -->
     <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
@@ -21,6 +22,8 @@
     <script type="text/javascript" src="js/materialize.min.js"></script>
 
     <link rel="stylesheet" href="css/main.css">
+
+    <script src='js/spectrum.js'></script>
 
     <script src="//console.re/connector.js" data-channel="canvas-earth-j" id="consolerescript"></script>
 
@@ -49,14 +52,22 @@
             <div class="col-xs-12">
                 <canvas id="canvas" width="300" height="300"></canvas>
                 <div class="create-screen-panel">
+                    <div>
+                        <a class="btn-floating btn-large waves-effect waves-light grey darken-4" id="show-palette-btn"><i class="material-icons">mode_edit</i></a>
+                        <div id="paletteContainer" hidden>
+                            <input type='text' id="showPaletteOnly" />
+                            <a style="float: right;" class="btn-floating tiny waves-effect waves-light grey darken-4" id="close-palette"><i class="material-icons">skip_previous</i></a>
+                        </div>
+                    </div>
                     <div class="file-field input-field">
                         <div class="btn-floating grey darken-4" id="upload-canvas-button">
                             <i class="material-icons">perm_media</i>
                             <input type="file" id="files">
                         </div>
                     </div>
-                    <a class="btn-floating btn-large waves-effect waves-light grey darken-4" id="share-art"><i class="material-icons">done</i></a>
-                    <!--<button class="create-screen-button canvas-earth-button" id="share-art">Share</button>-->
+                    <div>
+                        <a class="btn-floating btn-large waves-effect waves-light grey darken-4" id="share-art"><i class="material-icons">done</i></a>
+                    </div>
                 </div>
             </div>
         </div>

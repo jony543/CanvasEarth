@@ -92,8 +92,21 @@ html {
     top: 0;
 }
 
+.create-screen-panel div {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
 #upload-canvas-button {
     width: 56px;
     height: 56px;
     line-height: 67px;
+}
+
+.sp-palette {
+    max-width: 200px;
+}
+
+.sp-palette-container {
+    padding: 10px;
 }
