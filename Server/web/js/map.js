@@ -5,33 +5,48 @@
 var usersLocationIcon = "images/usersLocationIcon.png";
 
 var imgRequestPrefix = "http://dfcysvy1a0vsz.cloudfront.net/images/canvas/"; //  + canvas_file_name.jpeg
-
-
-
-var map;
+var map; // holds the google map when initMap is called
+var artData; // will hold the JSON from server
+var markersArray; // will hold marker objects after initMarkers is called
+var infoWindow;
+var userMarker; // this also holds the users location.
 
 initMap = function() {
+
+    console.log("google maps call returned");
+
     map = new google.maps.Map(document.getElementById('map') , {
-        center : {lat: 32.0853, lng: 34.7818},
+        center : {lat: 20, lng: 20},
         zoom: 8,
         styles: [{"featureType":"all","elementType":"all","stylers":[{"hue":"#ff0000"},{"saturation":-100},{"lightness":-30}]},{"featureType":"all","elementType":"labels.text.fill","stylers":[{"color":"#ffffff"}]},{"featureType":"all","elementType":"labels.text.stroke","stylers":[{"color":"#353535"}]},{"featureType":"landscape","elementType":"geometry","stylers":[{"color":"#656565"}]},{"featureType":"poi","elementType":"geometry.fill","stylers":[{"color":"#505050"}]},{"featureType":"poi","elementType":"geometry.stroke","stylers":[{"color":"#808080"}]},{"featureType":"road","elementType":"geometry","stylers":[{"color":"#454545"}]}]
     });
+
+
 
     infoWindow = new google.maps.InfoWindow({
         content: ''
     });
 
+    initUserMarker();
+    console.log("userMarker location before update: " +  userMarker.getPosition());
+    centerMapToCurrentLocation();
+    // updateMarkers(); // gets artData from server and inits the markers.
+
+    // var artData = [
+    //         {
+    //             title: "my title",
+    //             lat: 32.0853,
+    //             lng: 34.7818,
+    //             canvas_file_name : "C:\\Users\\Jonathan\\Documents\\GitHub\\CanvasEarth\\Server\\web\\images\\canvasCircle.png"
+    //         }
+    //     ]
+    //     ;
+    // initMarkers(artData);
 }
 
 
-
-
-
-var artData;
-
-// gets artData from server and inits markers on map
+//gets artData from server and inits markers on map
 var updateMarkers = function() {
-
     $.ajax (
         {
             url: "/art",
@@ -45,18 +60,12 @@ var updateMarkers = function() {
             }
         }
     )
-
-
 }
 
-
-
-var markersArray;
-
-// creates Marker objects from artData and sets on map.
+// clears marker array and fills with Marker objects based on artData
 var initMarkers = function(artData) {
-    markersArray = [];
 
+    markersArray = [];
     artData.forEach(function(currentArtData){
         var title = currentArtData.title;
         var lat = currentArtData.lat;
@@ -70,7 +79,6 @@ var initMarkers = function(artData) {
 }
 
 
-updateMarkers();
 
 
 var Marker = function(map, title, lat, lng, canvas_file_name) {
@@ -88,6 +96,7 @@ var Marker = function(map, title, lat, lng, canvas_file_name) {
         title: title
     });
 
+    // this.infoWindowContent =  document.createElement("div");
 
     this.clicked = function(){
         infoWindow.setContent(
@@ -110,29 +119,47 @@ var Marker = function(map, title, lat, lng, canvas_file_name) {
 }
 
 
-// delete infoWindow part. add center map to init map part. and add center button
-function centerMapToCurrentLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-            var pos = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude
-            };
-
-            infoWindow.setPosition(pos);
-            infoWindow.setContent('Location found.');
-            map.setCenter(pos);
-        }, function() {
-            handleLocationError(true, infoWindow, map.getCenter());
-        });
+function updateUserLocation() {
+    if (navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(setUserLocation);
     } else {
-        // Browser doesn't support Geolocation
-        handleLocationError(false, infoWindow, map.getCenter());
+        console.log("geolocation is not supported");
     }
+
 }
 
-centerMapToCurrentLocation();
+
+function initUserMarker() {
+    userMarker  = new google.maps.Marker({
+        position: new google.maps.LatLng(20, 20),
+        title: "user Location"
+    });
+
+    userMarker.setMap(map);
+}
+
+function setUserLocation(position){
+    console.log("***************** position returned from getCurrentPosition: " + position.lat + position.lng);
+
+    if ((position.lat != undefined) && (position.lng != undefined)){
+        userMarker.position = new google.maps.LatLng(position);
+    }
+    // console.log("userMaker position was updated if not 20,20:" + userMarker.position);
+    console.log("userMarer lat,lng after update is: " +  userMarker.getPosition());
+    // console.log("lng is:" + userMarker.position.lng());
+}
+
+
+// after defining - remember to set map to center on this.
+function centerMapToCurrentLocation() {
+    updateUserLocation();
+    console.log("error is not in update user location");
+    map.setCenter(userMarker.position);
+    console.log("passed map.setCenter test");
+}
+
 
 $("#usersLocationButton").click(function(e){
     centerMapToCurrentLocation();
 });
+
