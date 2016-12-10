@@ -145,7 +145,7 @@ function setUserLocation(position){
         userMarker.position = new google.maps.LatLng(position);
     }
     // console.log("userMaker position was updated if not 20,20:" + userMarker.position);
-    console.log("userMarer lat,lng after update is: " +  userMarker.getPosition());
+    // console.log("userMarer lat,lng after update is: " +  userMarker.getPosition());
     // console.log("lng is:" + userMarker.position.lng());
 }
 
@@ -153,9 +153,9 @@ function setUserLocation(position){
 // after defining - remember to set map to center on this.
 function centerMapToCurrentLocation() {
     updateUserLocation();
-    console.log("error is not in update user location");
+    // console.log("error is not in update user location");
     map.setCenter(userMarker.position);
-    console.log("passed map.setCenter test");
+    // console.log("passed map.setCenter test");
 }
 
 
