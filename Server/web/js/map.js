@@ -30,7 +30,7 @@ initMap = function() {
     initUserMarker();
     console.log("userMarker location before update: " +  userMarker.getPosition());
     centerMapToCurrentLocation();
-    // updateMarkers(); // gets artData from server and inits the markers.
+    updateMarkers(); // gets artData from server and inits the markers.
 
     // var artData = [
     //         {
@@ -163,3 +163,9 @@ $("#usersLocationButton").click(function(e){
     centerMapToCurrentLocation();
 });
 
+
+function getUserLocation(){
+    var userLocation = {lat: userMarker.position.lat(), lng: userMarker.position.lng()};
+    // console.log(userLocation);
+    return userLocation;
+}
