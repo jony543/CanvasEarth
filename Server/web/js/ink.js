@@ -309,6 +309,8 @@ $("#showPaletteOnly").spectrum({
         var rgb = color.toRgb();
         WILL.setcolor(Module.Color.from(rgb.r, rgb.g, rgb.b, rgb.a));
         $(showPaletteBtn.children[0]).css('background-color', color.toHexString());
+        $(closePaletteBtn.children[0]).css('background-color', color.toHexString());
+
     },
     palette: myPalette
 });

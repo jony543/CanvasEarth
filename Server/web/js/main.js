@@ -1,7 +1,7 @@
 var views = ["createView", "mapView", "arView"];
 initAugment();
 
-var currentView = views[0];
+var currentView = views[1];
 
 function updateView() {
     views.forEach(function(viewName){

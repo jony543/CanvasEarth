@@ -67,8 +67,9 @@ html {
     padding-right:0px;
 }
 
-
-
+div[class*="col-"] {
+    padding: 0;
+}
 
 #canvasImg {
     max-width: 300px;
@@ -90,6 +91,7 @@ html {
 .create-screen-panel {
     position: absolute;
     top: 0;
+    left: 2%;
 }
 
 .create-screen-panel div {
