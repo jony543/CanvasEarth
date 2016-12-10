@@ -1,7 +1,7 @@
 var WILL = {
     backgroundColor: Module.Color.WHITE,
     color: Module.Color.from(0, 0, 0),
-    brushWidth: 50,
+    brushWidth: 10,
 
     init: function(width, height) {
         this.initInkEngine(width, height);
@@ -35,7 +35,11 @@ var WILL = {
     },
 
     saveArt: function() {
-        return this.getImageCanvas(this.strokesLayer);
+        return this.getImageCanvas(this.strokesLayer, this.canvas.bounds);
+    },
+
+    saveBackground: function() {
+        return this.getImageCanvas(this.backgroundLayer, this.canvas.bounds);
     },
 
     initInkEngine: function(width, height) {
@@ -45,6 +49,7 @@ var WILL = {
         this.canvas = new Module.InkCanvas(document.getElementById("canvas"), width, height, {preserveDrawingBuffer: true});
         this.canvas.clear(this.backgroundColor);
 
+        this.backgroundLayer = this.canvas.createLayer();
         this.strokesLayer = this.canvas.createLayer();
 
 
@@ -62,7 +67,7 @@ var WILL = {
 
         this.strokeRenderer = new Module.StrokeRenderer(this.canvas, this.strokesLayer);
         // this.strokeRenderer.configure({brush: this.brush, color: this.color});
-        this.strokeRenderer.configure({brush: this.brush, color: this.color});
+        this.strokeRenderer.configure({width: this.brushWidth, brush: this.brush, color: this.color});
 
     },
 
@@ -124,10 +129,12 @@ var WILL = {
                         texture: texture,
                         ownGlResources: true
                     });
-                this.canvas.blend(this.imageLayer, {
+                this.backgroundLayer.blend(this.imageLayer, {
                     mode: Module.BlendMode.NONE,
                     transform: Module.MatTools.makeScale(scale)
                 });
+
+                this.canvas.blend(this.backgroundLayer);
             },
             this
         );
@@ -197,9 +204,7 @@ var WILL = {
     },
 
     buildPath: function(pos) {
-        // var pathBuilderValue = 50; // isNaN(this.pressure)?Date.now() / 1000:this.pressure;
-
-        var pathPart = this.pathBuilder.addPoint(this.inputPhase, pos, this.brushWidth);
+        var pathPart = this.pathBuilder.addPoint(this.inputPhase, pos, 1); //Math.floor(Date.now() / 1000));
         var pathContext = this.pathBuilder.addPathPart(pathPart);
 
         this.pathPart = pathContext.getPathPart();
@@ -256,12 +261,17 @@ $("#files").change(function() {
 var shareBtn = document.getElementById('share-art');
 shareBtn.addEventListener('click', function (e) {
     var imageSource = WILL.saveArt();
+    var canvasSource = WILL.saveBackground();
     var image_name = "myArt_" + new Date().getMilliseconds(); // TODO - define a proper name
+
+    // test
+    // window.open(WILL.saveBackground());
+    // location.reload();
 
     $.ajax({url: "/art/augment",
         type: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify({ artName: image_name, artData: imageSource, canvasData: WILL.canvasUrl }),
+        data: JSON.stringify({ artName: image_name, artData: imageSource, canvasData: canvasSource }),
         success: function(data, status, xhr) {
             location.reload();
         }
@@ -279,17 +289,6 @@ var myPalette = [
     ["#600","#783f04","#7f6000","#274e13","#073763","#20124d","#4c1130"]
 ];
 
-$("#showPaletteOnly").spectrum({
-    color: "#000",
-    showPaletteOnly: true,
-    flat: true,
-    change: function(color) {
-        var rgb = color.toRgb();
-        WILL.setcolor(Module.Color.from(rgb.r, rgb.g, rgb.b, rgb.a));
-    },
-    palette: myPalette
-});
-
 var paletteDiv = document.getElementById('paletteContainer');
 var showPaletteBtn = document.getElementById('show-palette-btn');
 showPaletteBtn.addEventListener('click', function (e) {
@@ -300,4 +299,16 @@ var closePaletteBtn = document.getElementById('close-palette');
 closePaletteBtn.addEventListener('click', function (e) {
     $(showPaletteBtn).show();
     $(paletteDiv).hide();
+});
+
+$("#showPaletteOnly").spectrum({
+    color: "#000",
+    showPaletteOnly: true,
+    flat: true,
+    change: function(color) {
+        var rgb = color.toRgb();
+        WILL.setcolor(Module.Color.from(rgb.r, rgb.g, rgb.b, rgb.a));
+        $(showPaletteBtn.children[0]).css('background-color', color.toHexString());
+    },
+    palette: myPalette
 });
