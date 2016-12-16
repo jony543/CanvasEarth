@@ -4,7 +4,8 @@
 // var pepper = "images/pepper.png";
 var usersLocationIcon = "images/usersLocationIcon.png";
 
-var imgRequestPrefix = "http://dfcysvy1a0vsz.cloudfront.net/images/canvas/"; //  + canvas_file_name.jpeg
+var imgRequestPrefix = "http://dfcysvy1a0vsz.cloudfront.net/images/canvas/"; //  + canvasFile.jpeg
+// var imgRequestPrefix = "/images/canvasCircle.png";
 var map; // holds the google map when initMap is called
 var artData; // will hold the JSON from server
 var markersArray; // will hold marker objects after initMarkers is called
@@ -18,6 +19,12 @@ initMap = function() {
     map = new google.maps.Map(document.getElementById('map') , {
         center : {lat: 20, lng: 20},
         zoom: 8,
+        zoomControl: false,
+        mapTypeControl: false,
+        scaleControl: false,
+        streetViewControl: false,
+        // rotateControl: boolean,
+        fullscreenControl: false,
         styles: [{"featureType":"all","elementType":"all","stylers":[{"hue":"#ff0000"},{"saturation":-100},{"lightness":-30}]},{"featureType":"all","elementType":"labels.text.fill","stylers":[{"color":"#ffffff"}]},{"featureType":"all","elementType":"labels.text.stroke","stylers":[{"color":"#353535"}]},{"featureType":"landscape","elementType":"geometry","stylers":[{"color":"#656565"}]},{"featureType":"poi","elementType":"geometry.fill","stylers":[{"color":"#505050"}]},{"featureType":"poi","elementType":"geometry.stroke","stylers":[{"color":"#808080"}]},{"featureType":"road","elementType":"geometry","stylers":[{"color":"#454545"}]}]
     });
 
@@ -37,7 +44,7 @@ initMap = function() {
     //             title: "my title",
     //             lat: 32.0853,
     //             lng: 34.7818,
-    //             canvas_file_name : "C:\\Users\\Jonathan\\Documents\\GitHub\\CanvasEarth\\Server\\web\\images\\canvasCircle.png"
+    //              canvasFile : ""  // "C:\\Users\\Jonathan\\Documents\\GitHub\\CanvasEarth\\Server\\web\\images\\canvasCircle.png"
     //         }
     //     ]
     //     ;
@@ -63,16 +70,16 @@ var updateMarkers = function() {
 }
 
 // clears marker array and fills with Marker objects based on artData
-var initMarkers = function(artData) {
+var initMarkers = function(artData1) {
 
     markersArray = [];
-    artData.forEach(function(currentArtData){
+    artData1.forEach(function(currentArtData){
         var title = currentArtData.title;
         var lat = currentArtData.lat;
         var lng = currentArtData.lng;
-        var canvas_file_name = currentArtData.canvas_file;
+        var canvasFile = currentArtData.canvas_file;
 
-        var marker = new Marker(map, title, lat, lng, canvas_file_name );
+        var marker = new Marker(map, title, lat, lng, canvasFile );
 
         markersArray.push(marker);
     })
@@ -81,13 +88,13 @@ var initMarkers = function(artData) {
 
 
 
-var Marker = function(map, title, lat, lng, canvas_file_name) {
+var Marker = function(map, title, lat, lng, canvasFile) {
     var googleMarker;
 
     this.lat = lat;
     this.lng = lng;
     this.title = title;
-    this.canvas_file_name = canvas_file_name;
+    this.canvasFile = canvasFile;
 
     googleMarker = new google.maps.Marker({
         position: new google.maps.LatLng(lat, lng),
@@ -98,11 +105,23 @@ var Marker = function(map, title, lat, lng, canvas_file_name) {
 
     // this.infoWindowContent =  document.createElement("div");
 
+    this.infoWindowContent = document.createElement("div");
+    this.infoWindowContent.innerHTML = this.title +
+        "<br>" +
+        '<img id=\'canvasImg\' src=\'' + imgRequestPrefix + this.canvasFile + '\'>';
+
+    this.linkToEntityButton = document.createElement("BUTTON");
+    this.linkToEntityButton.clicked = function() {
+        // azaria - entity link here;
+        window.open("http://www.google.com");
+    };
+
+    this.infoWindowContent.appendChild(this.linkToEntityButton);
+
+
     this.clicked = function(){
         infoWindow.setContent(
-            this.title +
-                "<br>" +
-            '<img id=\'canvasImg\' src=\'' + imgRequestPrefix + this.canvas_file_name + '\'>'
+            this.infoWindowContent
         );
 
         infoWindow.open(map, googleMarker);
