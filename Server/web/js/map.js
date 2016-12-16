@@ -158,10 +158,11 @@ function initUserMarker() {
 }
 
 function setUserLocation(position){
-    console.log("***************** position returned from getCurrentPosition: " + position.lat + position.lng);
+    console.log("***************** position returned from getCurrentPosition: " + position.coords.latitude + position.coords.longitude);
 
-    if ((position.lat != undefined) && (position.lng != undefined)){
-        userMarker.position = new google.maps.LatLng(position);
+    if ((position.coords.latitude != undefined) && (position.coords.longitude != undefined)){
+        // userMarker.position = new google.maps.LatLng(position);
+        userMarker.position = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
     }
     // console.log("userMaker position was updated if not 20,20:" + userMarker.position);
     // console.log("userMarer lat,lng after update is: " +  userMarker.getPosition());
