@@ -2,7 +2,7 @@
  * Created by Jonathan on 11/18/2016.
  */
 // var pepper = "images/pepper.png";
-var usersLocationIcon = "images/usersLocationIcon.png";
+var usersLocationIcon = "images/usersLocationIcon.png"; //TODO this is the user location icon
 
 var imgRequestPrefix = "http://dfcysvy1a0vsz.cloudfront.net/images/canvas/"; //  + canvasFile.jpeg
 // var imgRequestPrefix = "/images/canvasCircle.png";
@@ -17,7 +17,7 @@ initMap = function() {
     console.log("google maps call returned");
 
     map = new google.maps.Map(document.getElementById('map') , {
-        center : {lat: 20, lng: 20},
+        center : {lat: 20, lng: 20}, //TODO change to CES location
         zoom: 8,
         zoomControl: false,
         mapTypeControl: false,
@@ -70,7 +70,7 @@ var updateMarkers = function() {
 }
 
 // clears marker array and fills with Marker objects based on artData
-var initMarkers = function(artData1) {
+var initMarkers = function(artData1) { //TODO refresh somehow every time we load a new map
 
     markersArray = [];
     artData1.forEach(function(currentArtData){
@@ -99,7 +99,7 @@ var Marker = function(map, title, lat, lng, canvasFile) {
     googleMarker = new google.maps.Marker({
         position: new google.maps.LatLng(lat, lng),
         // animation: google.maps.Animation.DROP,
-        // icon: pepper,
+        // icon: pepper,//TODO change the image here
         title: title
     });
 
@@ -149,7 +149,7 @@ function updateUserLocation() {
 
 
 function initUserMarker() {
-    userMarker  = new google.maps.Marker({
+    userMarker  = new google.maps.Marker({ //TODO this is a googleMarker. should it be our marker?
         position: new google.maps.LatLng(20, 20),
         title: "user Location"
     });
@@ -163,6 +163,7 @@ function setUserLocation(position){
     if ((position.coords.latitude != undefined) && (position.coords.longitude != undefined)){
         // userMarker.position = new google.maps.LatLng(position);
         userMarker.position = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+        map.setCenter(userMarker.position);
     }
     // console.log("userMaker position was updated if not 20,20:" + userMarker.position);
     // console.log("userMarer lat,lng after update is: " +  userMarker.getPosition());
@@ -173,8 +174,10 @@ function setUserLocation(position){
 // after defining - remember to set map to center on this.
 function centerMapToCurrentLocation() {
     updateUserLocation();
-    // console.log("error is not in update user location");
-    map.setCenter(userMarker.position);
+    console.log("going to setCenter");
+
+    // map.setCenter(userMarker.position);
+    console.log("setCenter");
     // console.log("passed map.setCenter test");
 }
 
