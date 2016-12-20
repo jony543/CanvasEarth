@@ -4,7 +4,6 @@ const artModel  = require('./art-facade');
 var fs = require('fs');
 var async = require('async');
 var AWS = require('aws-sdk');
-AWS.config.update({region:'us-west-1'});
 var s3 = new AWS.S3();
 var s3Bucket = 'cepublic';
 

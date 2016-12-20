@@ -130,7 +130,7 @@ var WILL = {
                         ownGlResources: true
                     });
                 this.backgroundLayer.blend(this.imageLayer, {
-                    mode: Module.BlendMode.NONE,
+                    mode: Module.BlendMode.NORMAL,
                     transform: Module.MatTools.makeScale(scale)
                 });
 
@@ -146,7 +146,7 @@ var WILL = {
 
     getXYfromMouseEvent: function(evt){
         // console.re.log(JSON.stringify(evt));
-        
+
         var x = evt.pageX - $('#canvas').offset().left;
         var y = evt.pageY - $('#canvas').offset().top;
 
@@ -265,8 +265,10 @@ shareBtn.addEventListener('click', function (e) {
     var image_name = "myArt_" + new Date().getMilliseconds(); // TODO - define a proper name
 
     // test
-    // window.open(WILL.saveBackground());
+    // window.open(canvasSource);
     // location.reload();
+
+    // var position = getUserLocation();
 
     $.ajax({url: "/art/augment",
         type: 'POST',
@@ -314,3 +316,63 @@ $("#showPaletteOnly").spectrum({
     },
     palette: myPalette
 });
+
+var gallery_images = [];
+$.ajax (
+    {
+        url: "/canvas",
+        success: function (data){
+            gallery_images = data.images;
+        },
+        error: function(){
+            console.log("error on art request from server");
+        }
+    }
+);
+
+var galleryBtn = document.getElementById('open-gallery');
+galleryBtn.addEventListener('click', function (e) {
+    openPhotoSwipe();
+});
+var openPhotoSwipe = function() {
+    var pswpElement = document.querySelectorAll('.pswp')[0]
+
+    // build items array
+    // var items = [
+    //     {
+    //         src: 'https://farm2.staticflickr.com/1043/5186867718_06b2e9e551_b.jpg',
+    //         w: 964,
+    //         h: 1024
+    //     },
+    //     {
+    //         src: 'https://farm7.staticflickr.com/6175/6176698785_7dee72237e_b.jpg',
+    //         w: 1024,
+    //         h: 683
+    //     }
+    // ];
+
+    // define options (if needed)
+    var options = {
+        // history & focus options are disabled on CodePen
+        history: false,
+        focus: false,
+
+        showAnimationDuration: 0,
+        hideAnimationDuration: 0
+
+    };
+
+    options.mainClass = 'pswp--minimal--dark';
+    options.barsSize = {top:0,bottom:0};
+    options.captionEl = false;
+    options.fullscreenEl = false;
+    options.shareEl = false;
+    options.bgOpacity = 0.85;
+    options.tapToClose = true;
+    options.tapToToggleControls = false;
+
+    var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, gallery_images, options);
+    gallery.init();
+
+    $("#canvasGallery").show();
+};

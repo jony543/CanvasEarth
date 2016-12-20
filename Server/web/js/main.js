@@ -1,5 +1,4 @@
 var views = ["createView", "mapView", "arView"];
-initAugment();
 
 var currentView = views[1];
 
@@ -35,5 +34,4 @@ $("#mapViewButton").click(function(e){
 $("#arViewButton").click(function(e){
     currentView = views[2];
     updateView();
-    initVuforia("bedroom");
 });

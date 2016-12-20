@@ -9,7 +9,7 @@ const artSchema = new Schema({
     canvas_file: { type: String },
     art_file: { type: String },
 
-    distance: { type: Number },
+    entity_project: { type: String },
 
     lat: { type: Number },
     lng: { type: Number }
