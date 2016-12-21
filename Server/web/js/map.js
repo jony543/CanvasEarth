@@ -2,7 +2,7 @@
  * Created by Jonathan on 11/18/2016.
  */
 // var pepper = "images/pepper.png";
-var usersLocationIcon = "images/usersLocationIcon.png";
+var usersLocationIcon = "images/usersLocationIcon.png"; //TODO this is the user location icon
 
 var imgRequestPrefix = "http://dfcysvy1a0vsz.cloudfront.net/images/canvas/"; //  + canvasFile.jpeg
 // var imgRequestPrefix = "/images/canvasCircle.png";
@@ -17,7 +17,7 @@ initMap = function() {
     console.log("google maps call returned");
 
     map = new google.maps.Map(document.getElementById('map') , {
-        center : {lat: 20, lng: 20},
+        center : {lat: 20, lng: 20}, //TODO change to CES location
         zoom: 8,
         zoomControl: false,
         mapTypeControl: false,
@@ -38,22 +38,12 @@ initMap = function() {
     console.log("userMarker location before update: " +  userMarker.getPosition());
     centerMapToCurrentLocation();
     updateMarkers(); // gets artData from server and inits the markers.
-
-    // var artData = [
-    //         {
-    //             title: "my title",
-    //             lat: 32.0853,
-    //             lng: 34.7818,
-    //              canvasFile : ""  // "C:\\Users\\Jonathan\\Documents\\GitHub\\CanvasEarth\\Server\\web\\images\\canvasCircle.png"
-    //         }
-    //     ]
-    //     ;
-    // initMarkers(artData);
 }
 
 
 //gets artData from server and inits markers on map
-var updateMarkers = function() {
+var updateMarkers = function() { //TODO understand when to call again to refresh markers
+    console.log("updating markers");
     $.ajax (
         {
             url: "/art",
@@ -70,7 +60,7 @@ var updateMarkers = function() {
 }
 
 // clears marker array and fills with Marker objects based on artData
-var initMarkers = function(artData1) {
+var initMarkers = function(artData1) { //TODO refresh somehow every time we load a new map
 
     markersArray = [];
     artData1.forEach(function(currentArtData){
@@ -99,27 +89,43 @@ var Marker = function(map, title, lat, lng, canvasFile) {
     googleMarker = new google.maps.Marker({
         position: new google.maps.LatLng(lat, lng),
         // animation: google.maps.Animation.DROP,
-        // icon: pepper,
+        // icon: pepper,//TODO change the image here
         title: title
     });
 
     // this.infoWindowContent =  document.createElement("div");
-
-    this.infoWindowContent = document.createElement("div");
-    this.infoWindowContent.innerHTML = this.title +
+    var style = ".title {text-align: center; font-family: 'Raleway',sans-serif; " +
+        "font-size: 15px; font-weight: 800;} " +
+        "#canvasImg {max-width: 150px; height: auto}" +
+        ".canvas-btn {text-align: center; font-family: 'Raleway',sans-serif; " +
+        "font-size: 10px; font-weight: 600;} " +
+        ".centerize {display: block; margin: 0 auto; text-align: center; padding-top: 5px}"
+        ;
+    this.infoWindowContent = document.createElement("div"); //TODO to stylize the infoWindow: change this DIV
+    this.infoWindowContent.innerHTML = "<style>" + style + "</style>"+
+        '<div class=title>' + this.title  +
         "<br>" +
-        '<img id=\'canvasImg\' src=\'' + imgRequestPrefix + this.canvasFile + '\'>';
+            "<div class='centersize'>" +
+        '<img id=\'canvasImg\' src=\'' + imgRequestPrefix + this.canvasFile + '\'>' +
+        "</div>"+
+        '</div>';
 
-    this.linkToEntityButton = document.createElement("BUTTON");
-    this.linkToEntityButton.clicked = function() {
+    this.buttonDiv = document.createElement("div");
+    this.buttonDiv.setAttribute("style", "padding-top: 5px; display: block; margin: 0 auto; text-align: center; padding-top: 5px");
+    // this.buttonDiv.setAttribute("class", "centersize");
+    this.linkToEntityButton = document.createElement("button");
+    this.linkToEntityButton.setAttribute("class", "btn grey darken-2 canvas-btn");
+    this.linkToEntityButton.innerHTML = "Show Me";
+    this.linkToEntityButton.onclick = function() {
         // azaria - entity link here;
         window.open("http://www.google.com");
     };
-
-    this.infoWindowContent.appendChild(this.linkToEntityButton);
+    this.buttonDiv.appendChild(this.linkToEntityButton);
+    this.infoWindowContent.appendChild(this.buttonDiv);
 
 
     this.clicked = function(){
+
         infoWindow.setContent(
             this.infoWindowContent
         );
@@ -129,7 +135,7 @@ var Marker = function(map, title, lat, lng, canvasFile) {
     }
 
     var self = this;
-    googleMarker.addListener('click', function(){
+    googleMarker.addListener('click', function(){ //TODO clicked means the google marker is clicked
         self.clicked();
     });
 
@@ -149,19 +155,23 @@ function updateUserLocation() {
 
 
 function initUserMarker() {
-    userMarker  = new google.maps.Marker({
+    var iconBase = 'https://maps.google.com/mapfiles/kml/shapes/';
+    userMarker  = new google.maps.Marker({ //TODO this is a googleMarker. should it be our marker?
         position: new google.maps.LatLng(20, 20),
-        title: "user Location"
+        title: "Your Location",
+        icon: iconBase + 'flag_maps.png'
     });
 
     userMarker.setMap(map);
 }
 
 function setUserLocation(position){
-    console.log("***************** position returned from getCurrentPosition: " + position.lat + position.lng);
+    console.log("***************** position returned from getCurrentPosition: " + position.coords.latitude + position.coords.longitude);
 
-    if ((position.lat != undefined) && (position.lng != undefined)){
-        userMarker.position = new google.maps.LatLng(position);
+    if ((position.coords.latitude != undefined) && (position.coords.longitude != undefined)){
+        // userMarker.position = new google.maps.LatLng(position);
+        userMarker.position = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+        map.setCenter(userMarker.position);
     }
     // console.log("userMaker position was updated if not 20,20:" + userMarker.position);
     // console.log("userMarer lat,lng after update is: " +  userMarker.getPosition());
@@ -172,9 +182,6 @@ function setUserLocation(position){
 // after defining - remember to set map to center on this.
 function centerMapToCurrentLocation() {
     updateUserLocation();
-    // console.log("error is not in update user location");
-    map.setCenter(userMarker.position);
-    // console.log("passed map.setCenter test");
 }
 
 

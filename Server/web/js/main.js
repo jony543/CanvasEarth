@@ -29,6 +29,7 @@ $("#createViewButton").click(function(e){
 
 $("#mapViewButton").click(function(e){
     currentView = views[1];
+    updateMarkers();
     updateView();
 });
 
