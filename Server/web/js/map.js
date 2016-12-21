@@ -38,22 +38,11 @@ initMap = function() {
     console.log("userMarker location before update: " +  userMarker.getPosition());
     centerMapToCurrentLocation();
     updateMarkers(); // gets artData from server and inits the markers.
-
-    // var artData = [
-    //         {
-    //             title: "my title",
-    //             lat: 32.0853,
-    //             lng: 34.7818,
-    //              canvasFile : ""  // "C:\\Users\\Jonathan\\Documents\\GitHub\\CanvasEarth\\Server\\web\\images\\canvasCircle.png"
-    //         }
-    //     ]
-    //     ;
-    // initMarkers(artData);
 }
 
 
 //gets artData from server and inits markers on map
-var updateMarkers = function() {
+var updateMarkers = function() { //TODO understand when to call again to refresh markers
     $.ajax (
         {
             url: "/art",
@@ -105,14 +94,21 @@ var Marker = function(map, title, lat, lng, canvasFile) {
 
     // this.infoWindowContent =  document.createElement("div");
 
-    this.infoWindowContent = document.createElement("div");
-    this.infoWindowContent.innerHTML = this.title +
+    this.infoWindowContent = document.createElement("div"); //TODO to stylize the infoWindow: change this DIV
+    this.infoWindowContent.innerHTML = "<style> .title { text-align: center} </style>"+
+        '<div class=".title">' + this.title + '</div>' +
         "<br>" +
-        '<img id=\'canvasImg\' src=\'' + imgRequestPrefix + this.canvasFile + '\'>';
+        '<img id=\'canvasImg\' src=\'' + imgRequestPrefix + this.canvasFile + '\'>' +
+        '<br>' +
+        '<br>';
 
-    this.linkToEntityButton = document.createElement("BUTTON");
-    this.linkToEntityButton.clicked = function() {
+    this.linkToEntityButton = document.createElement("button"); //TODO somer says this is shitty
+    this.linkToEntityButton.innerHTML =
+        // '<button type="button" class="btn btn-default" aria-label="Left Align"> Show Me </button>';
+        "Show Me";
+    this.linkToEntityButton.onclick = function() {
         // azaria - entity link here;
+        console.log("entered clicked");
         window.open("http://www.google.com");
     };
 
@@ -120,6 +116,7 @@ var Marker = function(map, title, lat, lng, canvasFile) {
 
 
     this.clicked = function(){
+
         infoWindow.setContent(
             this.infoWindowContent
         );
@@ -129,7 +126,7 @@ var Marker = function(map, title, lat, lng, canvasFile) {
     }
 
     var self = this;
-    googleMarker.addListener('click', function(){
+    googleMarker.addListener('click', function(){ //TODO clicked means the google marker is clicked
         self.clicked();
     });
 
@@ -149,9 +146,11 @@ function updateUserLocation() {
 
 
 function initUserMarker() {
+    var iconBase = 'https://maps.google.com/mapfiles/kml/shapes/';
     userMarker  = new google.maps.Marker({ //TODO this is a googleMarker. should it be our marker?
         position: new google.maps.LatLng(20, 20),
-        title: "user Location"
+        title: "Your Location",
+        icon: iconBase + 'flag_maps.png'
     });
 
     userMarker.setMap(map);
@@ -174,11 +173,6 @@ function setUserLocation(position){
 // after defining - remember to set map to center on this.
 function centerMapToCurrentLocation() {
     updateUserLocation();
-    console.log("going to setCenter");
-
-    // map.setCenter(userMarker.position);
-    console.log("setCenter");
-    // console.log("passed map.setCenter test");
 }
 
 
