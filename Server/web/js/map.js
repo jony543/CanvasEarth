@@ -43,6 +43,7 @@ initMap = function() {
 
 //gets artData from server and inits markers on map
 var updateMarkers = function() { //TODO understand when to call again to refresh markers
+    console.log("updating markers");
     $.ajax (
         {
             url: "/art",
@@ -93,26 +94,34 @@ var Marker = function(map, title, lat, lng, canvasFile) {
     });
 
     // this.infoWindowContent =  document.createElement("div");
-
+    var style = ".title {text-align: center; font-family: 'Raleway',sans-serif; " +
+        "font-size: 15px; font-weight: 800;} " +
+        "#canvasImg {max-width: 150px; height: auto}" +
+        ".canvas-btn {text-align: center; font-family: 'Raleway',sans-serif; " +
+        "font-size: 10px; font-weight: 600;} " +
+        ".centerize {display: block; margin: 0 auto; text-align: center; padding-top: 5px}"
+        ;
     this.infoWindowContent = document.createElement("div"); //TODO to stylize the infoWindow: change this DIV
-    this.infoWindowContent.innerHTML = "<style> .title { text-align: center} </style>"+
-        '<div class=".title">' + this.title + '</div>' +
+    this.infoWindowContent.innerHTML = "<style>" + style + "</style>"+
+        '<div class=title>' + this.title  +
         "<br>" +
+            "<div class='centersize'>" +
         '<img id=\'canvasImg\' src=\'' + imgRequestPrefix + this.canvasFile + '\'>' +
-        '<br>' +
-        '<br>';
+        "</div>"+
+        '</div>';
 
-    this.linkToEntityButton = document.createElement("button"); //TODO somer says this is shitty
-    this.linkToEntityButton.innerHTML =
-        // '<button type="button" class="btn btn-default" aria-label="Left Align"> Show Me </button>';
-        "Show Me";
+    this.buttonDiv = document.createElement("div");
+    this.buttonDiv.setAttribute("style", "padding-top: 5px; display: block; margin: 0 auto; text-align: center; padding-top: 5px");
+    // this.buttonDiv.setAttribute("class", "centersize");
+    this.linkToEntityButton = document.createElement("button");
+    this.linkToEntityButton.setAttribute("class", "btn grey darken-2 canvas-btn");
+    this.linkToEntityButton.innerHTML = "Show Me";
     this.linkToEntityButton.onclick = function() {
         // azaria - entity link here;
-        console.log("entered clicked");
         window.open("http://www.google.com");
     };
-
-    this.infoWindowContent.appendChild(this.linkToEntityButton);
+    this.buttonDiv.appendChild(this.linkToEntityButton);
+    this.infoWindowContent.appendChild(this.buttonDiv);
 
 
     this.clicked = function(){
