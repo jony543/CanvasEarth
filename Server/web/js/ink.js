@@ -270,7 +270,7 @@ shareBtn.addEventListener('click', function (e) {
 
     // var position = getUserLocation();
 
-    $.ajax({url: "/art/augment",
+    $.ajax({url: "/api/art/augment",
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({ artName: image_name, artData: imageSource, canvasData: canvasSource }),
@@ -320,7 +320,7 @@ $("#showPaletteOnly").spectrum({
 var gallery_images = [];
 $.ajax (
     {
-        url: "/canvas",
+        url: "/api/canvas",
         success: function (data){
             gallery_images = data.images;
         },

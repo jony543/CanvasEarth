@@ -6,10 +6,10 @@ function updateView() {
     views.forEach(function(viewName){
         if (viewName == currentView){
             document.getElementById(viewName).classList.toggle("hidden", false);
-            document.getElementById(viewName + 'Button').classList.toggle("selectedButton", true);
+            document.getElementById(viewName + 'Button').classList.toggle("mySelectedButton", true);
         } else {
             document.getElementById(viewName).classList.toggle("hidden",true);
-            document.getElementById(viewName + 'Button').classList.toggle("selectedButton", false);
+            document.getElementById(viewName + 'Button').classList.toggle("mySelectedButton", false);
         }
     });
 }
