@@ -6,6 +6,10 @@ const morgan     = require('morgan');
 const bluebird   = require('bluebird');
 var path = require('path');
 
+var AWS = require('aws-sdk');
+AWS.config.update({region:'us-west-1'});
+
+
 const config = require('./config');
 const routes = require('./routes');
 
