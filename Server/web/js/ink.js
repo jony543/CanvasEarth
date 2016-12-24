@@ -258,22 +258,30 @@ $("#files").change(function() {
     }
 });
 
+var selected_canvas = undefined;
+
 var shareBtn = document.getElementById('share-art');
 shareBtn.addEventListener('click', function (e) {
     var imageSource = WILL.saveArt();
-    var canvasSource = WILL.saveBackground();
+
+    var canvasSource;
+    if (selected_canvas)
+        canvasSource = selected_canvas;
+    else
+        canvasSource = WILL.saveBackground();
+
     var image_name = "myArt_" + new Date().getMilliseconds(); // TODO - define a proper name
 
     // test
     // window.open(canvasSource);
     // location.reload();
 
-    // var position = getUserLocation();
+    var position = getUserLocation();
 
     $.ajax({url: "/api/art/augment",
         type: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify({ artName: image_name, artData: imageSource, canvasData: canvasSource }),
+        data: JSON.stringify({ artName: image_name, artData: imageSource, canvasData: canvasSource, lat: position.lat, lng: position.lng }),
         success: function(data, status, xhr) {
             location.reload();
         }
@@ -322,7 +330,9 @@ $.ajax (
     {
         url: "/api/canvas",
         success: function (data){
-            gallery_images = data.images;
+            data.images.forEach(function (x) {
+                gallery_images.push(x);
+            });
         },
         error: function(){
             console.log("error on art request from server");
@@ -336,21 +346,6 @@ galleryBtn.addEventListener('click', function (e) {
 });
 var openPhotoSwipe = function() {
     var pswpElement = document.querySelectorAll('.pswp')[0]
-
-    // build items array
-    // var items = [
-    //     {
-    //         src: 'https://farm2.staticflickr.com/1043/5186867718_06b2e9e551_b.jpg',
-    //         w: 964,
-    //         h: 1024
-    //     },
-    //     {
-    //         src: 'https://farm7.staticflickr.com/6175/6176698785_7dee72237e_b.jpg',
-    //         w: 1024,
-    //         h: 683
-    //     }
-    // ];
-
     // define options (if needed)
     var options = {
         // history & focus options are disabled on CodePen
@@ -358,7 +353,9 @@ var openPhotoSwipe = function() {
         focus: false,
 
         showAnimationDuration: 0,
-        hideAnimationDuration: 0
+        hideAnimationDuration: 0,
+
+        galleryPIDs: true
 
     };
 
@@ -374,5 +371,12 @@ var openPhotoSwipe = function() {
     var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, gallery_images, options);
     gallery.init();
 
-    $("#canvasGallery").show();
+    gallery.framework.bind( gallery.scrollWrap , 'pswpTap', function(e) {
+        if (e.detail.target.className == "pswp__img")
+        {
+            var element = gallery_images[gallery.getCurrentIndex()];
+            selected_canvas = element.name;
+            WILL.initImageLayer(element.src, element.w, element.h);
+        }
+    });
 };
