@@ -105,14 +105,13 @@ var Marker = function(map, title, lat, lng, canvasFile) {
     this.infoWindowContent.innerHTML = "<style>" + style + "</style>"+
         '<div class=title>' + this.title  +
         "<br>" +
-            "<div class='centersize'>" +
+        "<div class='centersize'>" +
         '<img id=\'canvasImg\' src=\'' + imgRequestPrefix + this.canvasFile + '\'>' +
         "</div>"+
         '</div>';
 
     this.buttonDiv = document.createElement("div");
     this.buttonDiv.setAttribute("style", "padding-top: 5px; display: block; margin: 0 auto; text-align: center; padding-top: 5px");
-    // this.buttonDiv.setAttribute("class", "centersize");
     this.linkToEntityButton = document.createElement("button");
     this.linkToEntityButton.setAttribute("class", "btn grey darken-2 canvas-btn");
     this.linkToEntityButton.innerHTML = "Show Me";
