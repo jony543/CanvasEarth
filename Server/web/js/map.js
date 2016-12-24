@@ -218,6 +218,7 @@ $("#usersLocationButton").click(function(e){
 
 
 function getUserLocation(){
+
     var userLocation = {lat: userMarker.position.lat(), lng: userMarker.position.lng()};
     // console.log(userLocation);
     return userLocation;
