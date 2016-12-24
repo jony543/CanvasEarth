@@ -7,12 +7,8 @@ var async = require('async');
 var request = require('request');
 
 var entiti = require('../../lib/entiti');
+var uploadImageToS3 = require('../../lib/uploadImageToS3');
 
-var AWS = require('aws-sdk');
-var s3 = new AWS.S3();
-var s3Bucket = 'cepublic';
-
-var entitiToken = undefined;
 var entitiProjects = {};
 entitiProjects['canvas_ny.jpg'] = 'c0b2c581-66a3-4b2f-bd46-90d9e126923f';
 
@@ -22,8 +18,6 @@ class ArtController extends Controller {
 
         async.parallel({
             canvas: function (callback) {
-                return callback(null, { name: req.body.canvasData, isNew : false });
-
                 if (req.body.canvasData) {
                     if (req.body.canvasData.length < 50) {
                         callback(null, { name: req.body.canvasData, isNew : false });
@@ -31,7 +25,7 @@ class ArtController extends Controller {
                         if (typeof req.body.canvasData == 'string') {
                             callback(null, req.body.canvasData);
                         } else {
-                            this.uploadImageToS3(req.canvasData, 'images/canvas/' + fileName, function (err, data) {
+                            uploadImageToS3(req.body.canvasData, config.storage.images.canvas + fileName, function (err, data) {
                                 if (err)
                                     callback("Canvas upload failed");
 
@@ -45,15 +39,13 @@ class ArtController extends Controller {
             },
 
             art: function (callback) {
-                return callback(null);
-
                 if (req.body.artData) {
                     if (req.body.artData < 50) {
                         callback(null, req.body.artData);
                     } else {
-                        this.uploadImageToS3(req.artData, 'images/canvas/' + fileName, function (err, data){
+                        uploadImageToS3(req.body.artData, config.storage.images.art + fileName, function (err, data){
                             if (err)
-                                callback("Art upload failed");
+                                callback("Canvas upload failed");
 
                             callback(null, data.uploadedImageName);
                         });
@@ -64,8 +56,10 @@ class ArtController extends Controller {
             }
 
         }, function (err, result) {
-            if (err)
+            if (err) {
+                console.log(err);
                 return res.status(500).json(err);
+            }
 
             if (result.canvas.isNew) {
                 this.model.create({
@@ -98,41 +92,6 @@ class ArtController extends Controller {
                 });
             }
         });
-    }
-
-    uploadImageToS3(data, key, callback) {
-        var image = this.img(data);
-        s3.upload({
-            Bucket: s3Bucket,
-            Key: key + image.extname,
-            Body: image.base64,
-            ContentEncoding: 'base64',
-            ContentType: 'image/' + image.format,
-        }, function (err, data) {
-            data.uploadedImageName = key + image.extname;
-            callback(err, data);
-        });
-    }
-
-
-    img(data) {
-        var reg = /^data:image\/(\w+);base64,([\s\S]+)/;
-        var match = data.match(reg);
-        var baseType = {
-            jpeg: 'jpg'
-        };
-
-        if (!match) {
-            throw new Error('image base64 data error');
-        }
-
-        var extname = baseType[match[1]] ? baseType[match[1]] : match[1];
-
-        return {
-            format: baseType,
-            extname: '.' + extname,
-            base64: match[2]
-        };
     }
 }
 

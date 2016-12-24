@@ -69,10 +69,10 @@
                         </div>
                     </div>
                     <div>
-                        <a class="btn-floating btn-large waves-effect waves-light grey darken-4" id="open-gallery"><i class="material-icons">view_carousel</i></a>
+                        <a class="btn-floating btn-large waves-effect waves-light grey darken-4" id="open-gallery"><i style="color: grey;" class="material-icons">view_carousel</i></a>
                     </div>
                     <div>
-                        <a class="btn-floating btn-large waves-effect waves-light grey darken-4" id="share-art"><i class="material-icons">done</i></a>
+                        <a class="btn-floating btn-large waves-effect waves-light grey darken-4" href="#augment-modal"><i class="material-icons">done</i></a>
                     </div>
                 </div>
                 <div id="canvasGallery">
@@ -142,6 +142,22 @@
 
                     </div>
                 </div>
+                <div id="augment-modal" class="modal bottom-sheet">
+                    <div class="modal-content">
+                        <h4>Share your ART</h4>
+                        <div class="input-field">
+                            <input id="art_name" type="text" class="validate">
+                            <label for="art_name">Art Name</label>
+                        </div>
+                        <div class="input-field">
+                            <input id="artist-email" type="email" />
+                            <label for="artist-email">Email</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="#!" id="share-art" class=" modal-action modal-close waves-effect waves-green btn-flat">Share</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -176,17 +192,6 @@
     </div>
 </div>
 </body>
-
-<script type="text/javascript">
-    // When ready...
-    window.addEventListener("load",function() {
-        // Set a timeout...
-        setTimeout(function(){
-            // Hide the address bar!
-            window.scrollTo(0, 1);
-        }, 0);
-    });
-</script>
 
 <link rel="stylesheet" href="css/map.css">
 

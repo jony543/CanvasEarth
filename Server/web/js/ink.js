@@ -114,11 +114,15 @@ var WILL = {
     },
 
     initImageLayer: function(url, w, h) {
-        this.canvasUrl = url;
-        this.canvasWidth = w;
-        this.canvasHeight = h;
-
         var scale = Math.min(this.canvas.height/h, this.canvas.width/w);
+        var tx = 0;
+        var ty = 0;
+
+        if (h*scale < this.canvas.height)
+            ty = ((this.canvas.height - h*scale) / 2);
+
+        if (w*scale < this.canvas.width)
+            tx = ((this.canvas.width - w*scale) / 2);
 
         Module.GLTools.prepareTexture(
             Module.GLTools.createTexture(GLctx.CLAMP_TO_EDGE, GLctx.LINEAR),
@@ -131,7 +135,7 @@ var WILL = {
                     });
                 this.backgroundLayer.blend(this.imageLayer, {
                     mode: Module.BlendMode.NORMAL,
-                    transform: Module.MatTools.makeScale(scale)
+                    transform: Module.MatTools.makeScaleTranslate(tx, ty, scale, scale)
                 });
 
                 this.canvas.blend(this.backgroundLayer);
@@ -259,9 +263,23 @@ $("#files").change(function() {
 });
 
 var selected_canvas = undefined;
+var art_name = "myArt_" + new Date().getMilliseconds();
+var artist = 'anonymouse'
+    ;
+$('.modal').modal({
+        dismissible: true, // Modal can be dismissed by clicking outside of the modal
+        complete: function() {
+        }
+    });
 
 var shareBtn = document.getElementById('share-art');
-shareBtn.addEventListener('click', function (e) {
+shareBtn.addEventListener('click', function(e) {
+    art_name = $('input[id="art_name"]').val();
+    artist = $('input[id="artist-email"]').val();
+    augment();
+});
+
+function augment () {
     var imageSource = WILL.saveArt();
 
     var canvasSource;
@@ -270,7 +288,7 @@ shareBtn.addEventListener('click', function (e) {
     else
         canvasSource = WILL.saveBackground();
 
-    var image_name = "myArt_" + new Date().getMilliseconds(); // TODO - define a proper name
+    var image_name = art_name;
 
     // test
     // window.open(canvasSource);
@@ -281,13 +299,21 @@ shareBtn.addEventListener('click', function (e) {
     $.ajax({url: "/api/art/augment",
         type: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify({ artName: image_name, artData: imageSource, canvasData: canvasSource, lat: position.lat, lng: position.lng }),
+        data: JSON.stringify({
+            artName: image_name,
+            artist: artist,
+            artData: imageSource,
+            canvasData: canvasSource,
+            lat: position.lat,
+            lng: position.lng }),
         success: function(data, status, xhr) {
-            location.reload();
+            console.log("art augmented:");
+            console.log(data);
+            console.log(status);
+            console.log('location.reload()');
         }
     });
-
-});
+};
 
 var myPalette = [
     ["#000","#444","#666","#999","#eee","#f3f3f3","#fff"],
@@ -333,16 +359,19 @@ $.ajax (
             data.images.forEach(function (x) {
                 gallery_images.push(x);
             });
+            console.log('received gallery images');
+            $("#open-gallery i").css('color', 'white');
         },
         error: function(){
-            console.log("error on art request from server");
+            console.log("error on canvas gallery request` from server");
         }
     }
 );
 
 var galleryBtn = document.getElementById('open-gallery');
 galleryBtn.addEventListener('click', function (e) {
-    openPhotoSwipe();
+    if (gallery_images.length >= 1)
+        openPhotoSwipe();
 });
 var openPhotoSwipe = function() {
     var pswpElement = document.querySelectorAll('.pswp')[0]
