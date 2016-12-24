@@ -10,6 +10,7 @@ const artSchema = new Schema({
     art_file: { type: String },
 
     entity_project: { type: String },
+    visible: {type: Boolean },
 
     lat: { type: Number },
     lng: { type: Number }

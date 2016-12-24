@@ -587,6 +587,10 @@ Module.addPostScript(function() {
 			return this.create({tx: tx, ty: ty});
 		},
 
+		makeScaleTranslate(tx,ty,sx,sy) {
+			return this.create({a: sx, d: sy, tx: tx, ty: ty});
+		},
+
 		makeScale: function(sx, sy) {
 			if (arguments.length == 1) sy = sx;
 			return this.create({a: sx, d: sy});

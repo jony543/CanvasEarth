@@ -69,16 +69,36 @@ var initMarkers = function(artData1) { //TODO refresh somehow every time we load
         var lng = currentArtData.lng;
         var canvasFile = currentArtData.canvas_file;
 
-        var marker = new Marker(map, title, lat, lng, canvasFile );
+        var marker = new Marker(map, title, lat, lng, canvasFile, currentArtData.entity_project );
 
         markersArray.push(marker);
     })
 }
 
+function getMobileOperatingSystem() {
+    var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+    // Windows Phone must come first because its UA also contains "Android"
+    if (/windows phone/i.test(userAgent)) {
+        return "Windows Phone";
+    }
+
+    if (/android/i.test(userAgent)) {
+        return "Android";
+    }
+
+    // iOS detection from: http://stackoverflow.com/a/9039885/177710
+    if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+        return "iOS";
+    }
+
+    return "unknown";
+}
 
 
 
-var Marker = function(map, title, lat, lng, canvasFile) {
+
+var Marker = function(map, title, lat, lng, canvasFile, entiti_project) {
     var googleMarker;
 
     this.lat = lat;
@@ -117,7 +137,15 @@ var Marker = function(map, title, lat, lng, canvasFile) {
     this.linkToEntityButton.innerHTML = "Show Me";
     this.linkToEntityButton.onclick = function() {
         // azaria - entity link here;
-        window.open("http://www.google.com");
+        var link = "http://www.google.com";
+        // if (entiti_project) {
+            if (getMobileOperatingSystem() == "iOS") {
+                link = 'entiti://?id=' + entiti_project;
+            } else {
+                link = 'https://entiti.wakingapp.com/?id=' + entiti_project;
+            }
+        // }
+        window.open(link);
     };
     this.buttonDiv.appendChild(this.linkToEntityButton);
     this.infoWindowContent.appendChild(this.buttonDiv);
