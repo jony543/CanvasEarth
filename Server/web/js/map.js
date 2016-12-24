@@ -46,7 +46,7 @@ var updateMarkers = function() { //TODO understand when to call again to refresh
     console.log("updating markers");
     $.ajax (
         {
-            url: "/art",
+            url: "/api/art",
             success: function (response){
                 console.log("got the Art Data");
                 artData = response;

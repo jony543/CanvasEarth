@@ -6,6 +6,10 @@ const morgan     = require('morgan');
 const bluebird   = require('bluebird');
 var path = require('path');
 
+var AWS = require('aws-sdk');
+AWS.config.update({region:'us-west-1'});
+
+
 const config = require('./config');
 const routes = require('./routes');
 
@@ -22,10 +26,10 @@ app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(morgan('tiny'));
-app.use('/', routes);
+app.use('/api', routes);
 
 // serve static wikitude files
-app.use('/ar', express.static( __dirname + '/web'));
+app.use('/', express.static( __dirname + '/web'));
 
 app.listen(port, function () {
     console.log(`Magic happens on port ` + port);

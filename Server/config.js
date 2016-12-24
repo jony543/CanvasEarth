@@ -10,9 +10,11 @@ const config = milieu('canvas-earth-server', {
     },
     storage: {
         host: '${FILE_SERVER_URL}',
+        s3Bucket: 'cepublic',
         images: {
-            canvas: 'iamges/canvas',
-            art: 'images/art'
+            gallery: 'canvas_gallery/',
+            canvas: 'iamges/canvas/',
+            art: 'images/art/'
         }
     }
 });

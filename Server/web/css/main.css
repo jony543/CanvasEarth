@@ -17,10 +17,21 @@
     font-size: 1.9em;
 }
 
-.selectedButton {
-    background: white;
+.btn:hover {
+    background-color: white;
     color: black;
 }
+
+nav {
+    height: auto;
+    margin-bottom: 2px;
+}
+
+.mySelectedButton {
+    background-color: white;
+    color: black;
+}
+
 
 #canvasEarthHeader{
     width: 100%;
