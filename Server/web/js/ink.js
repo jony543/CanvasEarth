@@ -307,10 +307,11 @@ function augment () {
             lat: position.lat,
             lng: position.lng }),
         success: function(data, status, xhr) {
-            console.log("art augmented:");
-            console.log(data);
-            console.log(status);
-            console.log('location.reload()');
+            // console.log("art augmented:");
+            // console.log(data);
+            // console.log(status);
+            // console.log('location.reload()');
+            location.reload();
         }
     });
 };
