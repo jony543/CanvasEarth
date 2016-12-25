@@ -255,6 +255,7 @@ $("#files").change(function() {
             urlReader.onload = function(event){
                 imageUrl = event.target.result;
                 WILL.initImageLayer(imageUrl, w, h);
+                canvasSelected_changeButtons();
             };
             urlReader.readAsDataURL(file);
         };
@@ -329,7 +330,7 @@ var myPalette = [
 var paletteDiv = document.getElementById('paletteContainer');
 var showPaletteBtn = document.getElementById('show-palette-btn');
 showPaletteBtn.addEventListener('click', function (e) {
-    $(showPaletteBtn).hide();
+    // $(showPaletteBtn).hide();
     $(paletteDiv).show();
 });
 var closePaletteBtn = document.getElementById('close-palette');
@@ -407,6 +408,19 @@ var openPhotoSwipe = function() {
             var element = gallery_images[gallery.getCurrentIndex()];
             selected_canvas = element.name;
             WILL.initImageLayer(element.src, element.w, element.h);
+            canvasSelected_changeButtons();
         }
     });
 };
+
+function canvasSelected_changeButtons() {
+    $(".canvas-selection").hide();
+    $("#done-button").removeAttr('disabled');
+}
+
+$(".hide-instructions").on('click', function (e) {
+   hideInstructions();
+});
+function hideInstructions() {
+    $("#instructions-container").attr('hidden', 'hidden');
+}

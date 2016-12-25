@@ -2,6 +2,12 @@ var views = ["createView", "mapView", "arView"];
 
 var currentView = views[1];
 
+// Note that "orientationchange" and screen.orientation are unprefixed in the following
+// code although this API is still vendor-prefixed browsers implementing it.
+window.addEventListener("orientationchange", function() {
+    location.reload();
+});
+
 function updateView() {
     views.forEach(function(viewName){
         if (viewName == currentView){
