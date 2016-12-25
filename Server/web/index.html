@@ -53,15 +53,6 @@
             <div class="col-xs-12">
                 <canvas id="canvas" width="300" height="300"></canvas>
                 <div class="create-screen-panel">
-                    <div>
-                        <a class="btn-floating btn-large waves-effect waves-light grey darken-4" id="show-palette-btn"><i class="fa fa-paint-brush"></i></a>
-                        <div id="paletteContainer" hidden>
-                            <input type='text' id="showPaletteOnly" />
-                            <div style="float: right;" >
-                                <a style="position: absolute; top: 30%;" class="btn-floating tiny waves-effect waves-light grey darken-4" id="close-palette"><i class="material-icons">skip_previous</i></a>
-                            </div>
-                        </div>
-                    </div>
                     <div class="file-field input-field">
                         <div style="line-height: 62px;" class="btn-floating grey darken-4" id="upload-canvas-button">
                             <i class="fa fa-photo"></i>
@@ -70,6 +61,15 @@
                     </div>
                     <div>
                         <a class="btn-floating btn-large waves-effect waves-light grey darken-4" id="open-gallery"><i style="color: grey;" class="material-icons">view_carousel</i></a>
+                    </div>
+                    <div>
+                        <a class="btn-floating btn-large waves-effect waves-light grey darken-4" id="show-palette-btn"><i class="fa fa-paint-brush"></i></a>
+                        <div id="paletteContainer" hidden>
+                            <input type='text' id="showPaletteOnly" />
+                            <div style="float: right;" >
+                                <a style="position: absolute; top: 53%;" class="btn-floating tiny waves-effect waves-light grey darken-4" id="close-palette"><i class="material-icons">skip_previous</i></a>
+                            </div>
+                        </div>
                     </div>
                     <div>
                         <a class="btn-floating btn-large waves-effect waves-light grey darken-4" href="#augment-modal"><i class="material-icons">done</i></a>
@@ -144,18 +144,12 @@
                 </div>
                 <div id="augment-modal" class="modal bottom-sheet">
                     <div class="modal-content">
-                        <h4>Share your ART</h4>
+                        <h5>Share your ART</h5>
                         <div class="input-field">
                             <input id="art_name" type="text" class="validate">
                             <label for="art_name">Art Name</label>
                         </div>
-                        <div class="input-field">
-                            <input id="artist-email" type="email" />
-                            <label for="artist-email">Email</label>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <a href="#!" id="share-art" class=" modal-action modal-close waves-effect waves-green btn-flat">Share</a>
+                        <a href="#!" id="share-art"  style="left: 50%; margin-left: -50px; color: white;" class=" modal-action modal-close waves-effect waves-green  blue lighten-1 btn-flat">Share</a>
                     </div>
                 </div>
             </div>
