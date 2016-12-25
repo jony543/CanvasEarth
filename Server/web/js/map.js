@@ -4,7 +4,7 @@
 // var pepper = "images/pepper.png";
 var usersLocationIcon = "images/usersLocationIcon.png"; //TODO this is the user location icon
 
-var imgRequestPrefix = "http://dfcysvy1a0vsz.cloudfront.net/images/canvas/"; //  + canvasFile.jpeg
+var imgRequestPrefix = "http://dfcysvy1a0vsz.cloudfront.net/";
 // var imgRequestPrefix = "/images/canvasCircle.png";
 var map; // holds the google map when initMap is called
 var artData; // will hold the JSON from server

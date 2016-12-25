@@ -4,12 +4,14 @@ const router = new Router();
 
 router.route('/')
     .get((...args) => controller.find(...args))
-    .post((...args) => controller.create(...args));
+    .post((...args) => controller.create(...args))
+;
 
 router.route('/:id')
-    //..put((...args) => controller.update(...args))
-    .get((...args) => controller.findById(...args));
-    // .delete((...args) => controller.remove(...args));
+    .get((...args) => controller.findById(...args))
+    .put((...args) => controller.update(...args))
+    // .delete((...args) => controller.remove(...args))
+;
 
 router.post('/augment', function(req, res) {
     controller.augment(req,res);

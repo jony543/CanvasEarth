@@ -8,6 +8,11 @@ var async = require('async');
 
 var token = '123';
 
+module.exports.projects = {
+    "canvas1.jpg": '44651b7f-6e87-4c5e-9035-df5350471bdd',
+    "canvas2.jpg": '5adbfa60-662f-4c0c-aae4-f301f5b38722'
+};
+
 module.exports.renewToken = function(callback) {
     request.post(config.entiti.token_url, {
         form: {
