@@ -59,10 +59,10 @@ class ArtController extends Controller {
             }
 
             if (result.canvas.isNew) {
-                this.model.create({
+                artModel.create({
                     title: fileName,
 
-                    canvas_file: result.canvas,
+                    canvas_file: result.canvas.name,
                     art_file: result.art,
 
                     visible: false,

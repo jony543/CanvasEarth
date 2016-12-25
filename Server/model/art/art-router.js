@@ -3,7 +3,10 @@ const Router = require('express').Router;
 const router = new Router();
 
 router.route('/')
-    .get((...args) => controller.find(...args))
+    .get(function (req, res, next) {
+        req.query = { "visible": true }
+        controller.find(req, res, next)
+    })
     .post((...args) => controller.create(...args))
 ;
 
