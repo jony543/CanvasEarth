@@ -25,11 +25,13 @@ mongoose.connect(config.mongo.url);
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 app.use(bodyParser.json({ limit: '50mb' }));
+
+// serve static files
+app.use('/', express.static( __dirname + '/web'));
+
+
 app.use(morgan('tiny'));
 app.use('/api', routes);
-
-// serve static wikitude files
-app.use('/', express.static( __dirname + '/web'));
 
 app.listen(port, function () {
     console.log(`Magic happens on port ` + port);
