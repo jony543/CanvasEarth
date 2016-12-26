@@ -5,7 +5,7 @@ var currentView = views[1];
 // Note that "orientationchange" and screen.orientation are unprefixed in the following
 // code although this API is still vendor-prefixed browsers implementing it.
 window.addEventListener("orientationchange", function() {
-    location.reload();
+    WILL.initImageLayer();
 });
 
 function updateView() {

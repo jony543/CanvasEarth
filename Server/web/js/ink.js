@@ -9,7 +9,9 @@ var WILL = {
         //debugger;
     },
 
-    getImageCanvas: function(layer, rect) {
+    getImageCanvas: function(layer, rect, extension) {
+        if (!extension)
+            extension = 'png';
         var tempCanvas = document.createElement("canvas");
         var context = tempCanvas.getContext("2d");
 
@@ -31,7 +33,7 @@ var WILL = {
         imageData.data.set(pixels);
         context.putImageData(imageData, 0, 0);
 
-        return tempCanvas.toDataURL('image/png');
+        return tempCanvas.toDataURL('image/' + extension);
     },
 
     saveArt: function() {
@@ -142,6 +144,7 @@ var WILL = {
             },
             this
         );
+        return scale;
     },
 
     getPressure: function(e) {
@@ -229,10 +232,38 @@ var WILL = {
     }
 };
 
-
-var imageUrl = "images/city hall.jpg";
 var canvasWidth = $("#canvas").width();
 var canvasHeight = $("#canvas").height();
+var uploaded_image = "";
+var selected_canvas = undefined;
+
+
+var createImage = function (src) {
+    var deferred = $.Deferred();
+    var img = new Image();
+
+    img.onload = function() {
+        deferred.resolve(img);
+    };
+    img.src = src;
+    return deferred.promise();
+};
+
+function resize(imageData, width, height, cb) {
+    $.when(
+        createImage(imageData)
+    ).then(function(img) {
+        var canvas1 = document.createElement("canvas");
+
+        canvas1.width = width;
+        canvas1.height = height;
+
+        var ctx = canvas1.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        cb(canvas1.toDataURL("image/jpeg"));
+    }, function () {console.log('error resizing image')});
+}
 
 Module.addPostScript(function() {
     WILL.init(canvasWidth, canvasHeight);
@@ -248,13 +279,17 @@ $("#files").change(function() {
         var urlReader = new FileReader();
 
         var _URL = window.URL || window.webkitURL;
-        img = new Image();
+        var img = new Image();
         img.onload = function (imgData) {
             var w = imgData.target.width;
             var h = imgData.target.height;
             urlReader.onload = function(event){
-                imageUrl = event.target.result;
-                WILL.initImageLayer(imageUrl, w, h);
+                uploaded_image = event.target.result;
+                var scale = WILL.initImageLayer(uploaded_image, w, h);
+                resize(uploaded_image, w*scale, h*scale, function(x) {
+                    selected_canvas = x;
+                });
+
                 canvasSelected_changeButtons();
             };
             urlReader.readAsDataURL(file);
@@ -263,10 +298,8 @@ $("#files").change(function() {
     }
 });
 
-var selected_canvas = undefined;
 var art_name = "myArt_" + new Date().getMilliseconds();
-var artist = 'anonymouse'
-    ;
+var artist = 'anonymouse';
 $('.modal').modal({
         dismissible: true, // Modal can be dismissed by clicking outside of the modal
         complete: function() {
@@ -290,10 +323,6 @@ function augment () {
         canvasSource = WILL.saveBackground();
 
     var image_name = art_name;
-
-    // test
-    // window.open(canvasSource);
-    // location.reload();
 
     var position = getUserLocation();
 
