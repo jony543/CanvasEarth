@@ -360,7 +360,11 @@ var paletteDiv = document.getElementById('paletteContainer');
 var showPaletteBtn = document.getElementById('show-palette-btn');
 showPaletteBtn.addEventListener('click', function (e) {
     // $(showPaletteBtn).hide();
-    $(paletteDiv).show();
+    if ($(paletteDiv).is(":visible")) {
+        $(paletteDiv).hide();
+    } else {
+        $(paletteDiv).show();
+    }
 });
 var closePaletteBtn = document.getElementById('close-palette');
 closePaletteBtn.addEventListener('click', function (e) {
