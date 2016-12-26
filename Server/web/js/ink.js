@@ -160,7 +160,7 @@ var WILL = {
     },
 
     beginStroke: function(e) {
-      console.log("stroke began");
+      // console.log("stroke began");
         //if (e.button != 0) return;
         if (["mousedown", "mouseup"].contains(e.type) && e.button != 0) return;
         if (e.changedTouches) e = e.changedTouches[0];
@@ -365,7 +365,7 @@ $.ajax (
             $("#open-gallery i").css('color', 'white');
         },
         error: function(){
-            console.log("error on canvas gallery request` from server");
+            console.log("error on canvas gallery request from server");
         }
     }
 );

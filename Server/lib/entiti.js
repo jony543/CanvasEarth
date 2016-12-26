@@ -1,12 +1,10 @@
 var request = require('request');
 const config = require('../config');
 var fs = require('fs');
-var Readable = require('stream').Readable;
-var Base64Decode = require('base64-stream').decode;
 var base64 = require('base64-img');
 var async = require('async');
 
-var token = '123';
+var token = 'sometoken';
 
 module.exports.projects = {
     "canvas1.jpg": '44651b7f-6e87-4c5e-9035-df5350471bdd',
@@ -14,6 +12,7 @@ module.exports.projects = {
 };
 
 module.exports.renewToken = function(callback) {
+    console.log('[INFO]renewToken called:');
     request.post(config.entiti.token_url, {
         form: {
             username: config.entiti.username,
@@ -21,26 +20,31 @@ module.exports.renewToken = function(callback) {
             grant_type: 'password'
         }
     }, function (err, httpResponse, body) {
-        if (httpResponse.statusCode != 200 || err) {
-            if (!err)
-                err = body;
-            callback(err, body);
-        }
-        else {
-            token = JSON.parse(body).access_token;
-            if (callback)
-                callback(null, body);
-
+        if (err) {
+            console.log('[ERROR]entiti token renewal failed: ' + JSON.stringify(err));
+        } else {
+            if (httpResponse.statusCode != 200) {
+                console.log('[ERROR]entiti token renewal failed: ' + body``);
+                return callback(body);
+            } else {
+                token = JSON.parse(body).access_token;
+                console.log('[INFO]entiti token renewed: ' + token);
+                if (callback)
+                    callback(null, body);
+            }
         }
     });
 };
 
 module.exports.overrideProjectImage = function (project, art, filename, done) {
-    // var s = new Readable;
-    // s.push(art);
-    // s.pipe(Base64Decode());
-
-    base64.img(art, '', filename,  function(err, filepath) {
+    console.log('[INFO]overrideProjectImage called for project: ' + project + ', file: ' + filename);
+    var d = new Date();
+    var dateString = d.getMonth()+'-'+d.getDate()+'-'+d.getYear()+'T'+ d.getHours() +'-'+d.getMinutes() + '-' + d.getSeconds() + '-' + d.getMilliseconds();
+    base64.img(art, 'temp', filename + '_' + dateString,  function(err, filepath) {
+        if (err) {
+            console.log("[ERROR]could not write file: " + filename);
+            return done(err);
+        }
 
         async.waterfall([
             function(callback) {
@@ -49,21 +53,33 @@ module.exports.overrideProjectImage = function (project, art, filename, done) {
                     {
                         formData: {
                             projectId: project,
-                            file: readable
+                            file: {
+                                value: readable,
+                                options: {
+                                    filename: filename + '.png',
+                                    contentType: 'image/png'
+                                }
+                            }
                         },
                         auth: {
                             'bearer': token
                         }
                     }, function optionalCallback(err, httpResponse, body) {
-                        if (!err && httpResponse.statusCode == 200)
-                            return done(err, body);
-                        else {
-                            if (httpResponse.statusCode == 401) {
-                                callback(null);
-                            } else {
-                                if (!err)
-                                    err = body;
-                                return done(err);
+                        if (err){
+                            return done(err)
+                        } else {
+                            if (httpResponse.statusCode == 200) {
+                                console.log('[INFO]overrideProjectImage success');
+                                return done(err, body);
+                            }
+                            else {
+                                if (httpResponse.statusCode == 401) {
+                                    console.log('[WARNING]overrideProjectImage unauthorized');
+                                    callback(null);
+                                } else {
+                                    console.log('[WARNING]overrideProjectImage error: ' + body);
+                                    return done(body);
+                                }
                             }
                         }
                     });
@@ -82,17 +98,26 @@ module.exports.overrideProjectImage = function (project, art, filename, done) {
                     {
                         formData: {
                             projectId: project,
-                            file: readable
+                            file: {
+                                value: readable,
+                                options: {
+                                    filename: filename + '.png',
+                                    contentType: 'image/png'
+                                }
+                            }
                         },
                         auth: {
                             'bearer': token
                         }
                     }, function (err, httpResponse, body) {
-                        if (!err && httpResponse.statusCode == 200)
+                        if (!err && httpResponse.statusCode == 200) {
+                            console.log('[INFO]overrideProjectImage success');
                             return done(err, body);
+                        }
                         else {
                             if (!err)
                                 err = body;
+                            console.log('[WARNING]overrideProjectImage error: ' + error);
                             return done(err);
                         }
                     });

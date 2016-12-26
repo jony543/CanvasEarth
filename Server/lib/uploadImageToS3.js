@@ -16,7 +16,8 @@ function uploadImageToS3(data, key, callback) {
         ContentEncoding: 'base64',
         ContentType: 'image/' + image.format,
     }, function (err, data) {
-        data.uploadedImageName = key + image.extname;
+        if (data != null)
+            data.uploadedImageName = key + image.extname;
         callback(err, data);
     });
 }
