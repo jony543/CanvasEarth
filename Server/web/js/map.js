@@ -139,15 +139,25 @@ var Marker = function(map, title, lat, lng, canvasFile, entiti_project) {
         // azaria - entity link here;
         var link = "http://www.google.com";
         // if (entiti_project) {
-            if (getMobileOperatingSystem() == "iOS") {
-                link = 'entiti://?id=' + entiti_project;
-            } else {
-                link = 'https://entiti.wakingapp.com/?id=' + entiti_project;
-            }
+        if (getMobileOperatingSystem() == "iOS") {
+            link = 'entiti://?id=' + entiti_project;
+        } else {
+            link = 'https://entiti.wakingapp.com/?id=' + entiti_project;
+        }
         // }
         window.open(link);
     };
+    this.linkToDownloadEntityButton = document.createElement("a");
+    if (getMobileOperatingSystem() == "iOS") {
+        this.linkToDownloadEntityButton.setAttribute("href", "https://itunes.apple.com/us/app/entiti/id834277058?mt=8");
+        this.linkToDownloadEntityButton.setAttribute("style", "float: right; display:inline-block;overflow:hidden;background:url(//linkmaker.itunes.apple.com/assets/shared/badges/en-us/appstore-lrg.svg) no-repeat;width:135px;height:40px;background-size:contain;");
+    } else {
+        this.linkToDownloadEntityButton.setAttribute("href", 'https://play.google.com/store/apps/details?id=com.wakingapp.wakingapp&hl=en&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1');
+        this.linkToDownloadEntityButton.setAttribute("target", "_blank");
+        this.linkToDownloadEntityButton.innerHTML = "<button class='btn indigo darken-4  canvas-btn'> Download AR Viewer </button>";
+    }
     this.buttonDiv.appendChild(this.linkToEntityButton);
+    this.buttonDiv.appendChild(this.linkToDownloadEntityButton);
     this.infoWindowContent.appendChild(this.buttonDiv);
 
 
