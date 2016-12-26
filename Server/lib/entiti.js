@@ -36,20 +36,31 @@ module.exports.renewToken = function(callback) {
 };
 
 module.exports.overrideProjectImage = function (project, art, filename, done) {
-    // var s = new Readable;
-    // s.push(art);
-    // s.pipe(Base64Decode());
-
     base64.img(art, '', filename,  function(err, filepath) {
 
         async.waterfall([
             function(callback) {
                 var readable = fs.createReadStream(filepath);
+
+                var stream = new Base64Decode();
+                stream.push(art);
+                stream.end();
+                stream._flush(function () {});
+
+
+
                 request.post(config.entiti.overrideProjectImage_url,
                     {
                         formData: {
                             projectId: project,
-                            file: readable
+                            // file: readable,
+                            file: {
+                                value: stream,
+                                options: {
+                                    filename: filename + '.png',
+                                    contentType: 'image/png'
+                                }
+                            }
                         },
                         auth: {
                             'bearer': token
@@ -58,12 +69,14 @@ module.exports.overrideProjectImage = function (project, art, filename, done) {
                         if (!err && httpResponse.statusCode == 200)
                             return done(err, body);
                         else {
-                            if (httpResponse.statusCode == 401) {
-                                callback(null);
-                            } else {
-                                if (!err)
-                                    err = body;
+                            if (err)
                                 return done(err);
+                            else {
+                                if (httpResponse.statusCode == 401) {
+                                    callback(null);
+                                } else {
+                                    return done(body);
+                                }
                             }
                         }
                     });
@@ -77,12 +90,22 @@ module.exports.overrideProjectImage = function (project, art, filename, done) {
                 });
             },
             function (callback) {
-                var readable = fs.createReadStream(filepath);
+                var stream = new Base64Decode();
+                stream.push(art);
+                stream.end();
+                stream._flush(function () {});
+
                 request.post(config.entiti.overrideProjectImage_url,
                     {
                         formData: {
-                            projectId: project,
-                            file: readable
+                            // file: readable,
+                            file: {
+                                value: stream,
+                                options: {
+                                    filename: filename + '.png',
+                                    contentType: 'image/png'
+                                }
+                            }
                         },
                         auth: {
                             'bearer': token
