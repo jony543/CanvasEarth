@@ -12,7 +12,7 @@ var markersArray; // will hold marker objects after initMarkers is called
 var infoWindow;
 var userMarker; // this also holds the users location.
 
-var defaultUserLocatoin = {lat: 32.085300, lng: 34.781768};
+var defaultUserLocatoin = { lat: 36.217332, lng: -115.149937 };
 
 initMap = function() {
 
