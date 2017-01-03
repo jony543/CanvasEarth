@@ -12,12 +12,14 @@ var markersArray; // will hold marker objects after initMarkers is called
 var infoWindow;
 var userMarker; // this also holds the users location.
 
+var defaultUserLocatoin = {lat: 32.085300, lng: 34.781768};
+
 initMap = function() {
 
     console.log("google maps call returned");
 
     map = new google.maps.Map(document.getElementById('map') , {
-        center : { lat: 36.1672, lng: -115.1547 }, // this is CES location :)
+        center : defaultUserLocatoin, //TODO change to CES location
         zoom: 8,
         zoomControl: false,
         mapTypeControl: false,
@@ -115,11 +117,11 @@ var Marker = function(map, title, lat, lng, canvasFile, entiti_project) {
 
     // this.infoWindowContent =  document.createElement("div");
     var style = ".title {text-align: center; font-family: 'Raleway',sans-serif; " +
-        "font-size: 15px; font-weight: 800;} " +
-        "#canvasImg {max-width: 150px; height: auto}" +
-        ".canvas-btn {text-align: center; font-family: 'Raleway',sans-serif; " +
-        "font-size: 10px; font-weight: 600;} " +
-        ".centerize {display: block; margin: 0 auto; text-align: center; padding-top: 5px}"
+            "font-size: 15px; font-weight: 800;} " +
+            "#canvasImg {max-width: 150px; height: auto}" +
+            ".canvas-btn {text-align: center; font-family: 'Raleway',sans-serif; " +
+            "font-size: 10px; font-weight: 600;} " +
+            ".centerize {display: block; margin: 0 auto; text-align: center; padding-top: 5px}"
         ;
     this.infoWindowContent = document.createElement("div"); //TODO to stylize the infoWindow: change this DIV
     this.infoWindowContent.innerHTML = "<style>" + style + "</style>"+
@@ -194,7 +196,7 @@ function updateUserLocation() {
 function initUserMarker() {
     var iconBase = 'https://maps.google.com/mapfiles/kml/shapes/';
     userMarker  = new google.maps.Marker({ //TODO this is a googleMarker. should it be our marker?
-        position: new google.maps.LatLng(20, 20),
+        position: new google.maps.LatLng(defaultUserLocatoin.lat, defaultUserLocatoin.lng),
         title: "Your Location",
         icon: iconBase + 'flag_maps.png'
     });
