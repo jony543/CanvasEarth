@@ -12,6 +12,12 @@ var uploadImageToS3 = require('../../lib/uploadImageToS3');
 var entitiProjects = {};
 entitiProjects['canvas_1.jpg'] = '44651b7f-6e87-4c5e-9035-df5350471bdd';
 entitiProjects['canvas_2.jpg'] = '5adbfa60-662f-4c0c-aae4-f301f5b38722';
+entitiProjects['canvas_3.jpg'] = '22496499-62ea-4250-b82e-a9a55f7de7ef';
+entitiProjects['canvas_4.jpg'] = '452be3ec-0310-49ee-99dc-c10a417e02e1';
+entitiProjects['canvas_5.jpg'] = 'b847712c-cc23-46af-a0cb-cee15b7ada8f';
+entitiProjects['canvas_6.jpg'] = 'b31e1704-ee5b-4037-9c6c-3e9c27b9b1ff';
+
+
 
 class ArtController extends Controller {
     augment(req, res) {

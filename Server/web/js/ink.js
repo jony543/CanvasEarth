@@ -373,7 +373,7 @@ closePaletteBtn.addEventListener('click', function (e) {
 });
 
 $("#showPaletteOnly").spectrum({
-    color: "#000",
+    color: "#c00",
     showPaletteOnly: true,
     flat: true,
     change: function(color) {
@@ -385,6 +385,9 @@ $("#showPaletteOnly").spectrum({
     },
     palette: myPalette
 });
+var initialColor = $("#showPaletteOnly").spectrum("get");
+$(showPaletteBtn.children[0]).css('background-color', initialColor.toHexString());
+$(closePaletteBtn.children[0]).css('background-color', initialColor.toHexString());
 
 var gallery_images = [];
 $.ajax (
@@ -453,6 +456,9 @@ function canvasSelected_changeButtons() {
 
 $(".hide-instructions").on('click', function (e) {
    hideInstructions();
+});
+$(".hide-instructions").on('touchmove', function (e) {
+    hideInstructions();
 });
 function hideInstructions() {
     $("#instructions-container").attr('hidden', 'hidden');

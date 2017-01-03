@@ -9,10 +9,12 @@ web/resources/images/art
 *.log
 *.sublime-workspace
 *.sublime-project
+*.png
 
 
 # Elastic Beanstalk Files
 
+.elasticbeanstalk
 .elasticbeanstalk/*
 
 !.elasticbeanstalk/*.cfg.yml

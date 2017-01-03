@@ -17,7 +17,7 @@ initMap = function() {
     console.log("google maps call returned");
 
     map = new google.maps.Map(document.getElementById('map') , {
-        center : { lat: 32.085300, lng: 34.781768 }, //TODO change to CES location
+        center : { lat: 36.1672, lng: -115.1547 }, // this is CES location :)
         zoom: 8,
         zoomControl: false,
         mapTypeControl: false,
