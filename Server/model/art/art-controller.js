@@ -29,7 +29,7 @@ entitiProjects['canvas_11.jpg'] = '89527d77-1c94-4655-9dc7-036c884bc95b';
 
 entitiProjects['canvas_12.jpg'] = '9b7cff11-faee-4a20-bda2-a0631ac22e9d';
 
-entitiProjects['canvas_13.jpg'] = '/ea728f77-de73-4515-b079-75497ad6b64f';
+entitiProjects['canvas_13.jpg'] = 'ea728f77-de73-4515-b079-75497ad6b64f';
 
 entitiProjects['canvas_14.jpg'] = '4fd47c8e-34af-4754-a007-a68ec2d4666f';
 
