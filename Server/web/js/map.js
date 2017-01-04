@@ -20,7 +20,7 @@ initMap = function() {
 
     map = new google.maps.Map(document.getElementById('map') , {
         center : defaultUserLocatoin, //TODO change to CES location
-        zoom: 8,
+        zoom: 15,
         zoomControl: false,
         mapTypeControl: false,
         scaleControl: false,
@@ -205,7 +205,6 @@ function initUserMarker() {
 }
 
 function setUserLocation(position){
-    console.log("***************** position returned from getCurrentPosition: " + position.coords.latitude + position.coords.longitude);
 
     if ((position.coords.latitude != undefined) && (position.coords.longitude != undefined)){
         // userMarker.position = new google.maps.LatLng(position);
