@@ -20,7 +20,7 @@ initMap = function() {
 
     map = new google.maps.Map(document.getElementById('map') , {
         center : defaultUserLocatoin, //TODO change to CES location
-        zoom: 15,
+        zoom: 1,
         zoomControl: false,
         mapTypeControl: false,
         scaleControl: false,
