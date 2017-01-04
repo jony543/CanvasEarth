@@ -265,10 +265,6 @@ function resize(imageData, width, height, cb) {
     }, function () {console.log('error resizing image')});
 }
 
-Module.addPostScript(function() {
-    WILL.init(canvasWidth, canvasHeight);
-});
-
 $("#files").change(function() {
     //Get the photo from the input form
     var input = document.getElementById('files');
@@ -373,7 +369,7 @@ closePaletteBtn.addEventListener('click', function (e) {
 });
 
 $("#showPaletteOnly").spectrum({
-    color: "#c00",
+    color: "#3d85c6",
     showPaletteOnly: true,
     flat: true,
     change: function(color) {
@@ -388,6 +384,13 @@ $("#showPaletteOnly").spectrum({
 var initialColor = $("#showPaletteOnly").spectrum("get");
 $(showPaletteBtn.children[0]).css('background-color', initialColor.toHexString());
 $(closePaletteBtn.children[0]).css('background-color', initialColor.toHexString());
+
+Module.addPostScript(function() {
+    WILL.init(canvasWidth, canvasHeight);
+
+    var rgb = initialColor.toRgb();
+    WILL.setcolor(Module.Color.from(rgb.r, rgb.g, rgb.b, rgb.a));
+});
 
 var gallery_images = [];
 $.ajax (
