@@ -12,7 +12,7 @@ var markersArray; // will hold marker objects after initMarkers is called
 var infoWindow;
 var userMarker; // this also holds the users location.
 
-var defaultUserLocatoin = { lat: 36.217332, lng: -115.149937 };
+var defaultUserLocatoin = { lat: 36.16783, lng: -115.156181 };
 
 initMap = function() {
 
@@ -20,7 +20,7 @@ initMap = function() {
 
     map = new google.maps.Map(document.getElementById('map') , {
         center : defaultUserLocatoin, //TODO change to CES location
-        zoom: 1,
+        zoom: 15,
         zoomControl: false,
         mapTypeControl: false,
         scaleControl: false,
